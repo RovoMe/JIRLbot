@@ -1,0 +1,7 @@
+TODO-List:
+*) delay the crawl of pages from a certain domain as indicated in the robots.txt
+   
+*) Visualize BEAST showing the 25/50/... best ranked PLDs (maybe on the IRLbot 
+   page) and the self-expanding buckets the BEAST structure uses
+   
+   
