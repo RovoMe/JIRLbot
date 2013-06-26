@@ -5,6 +5,7 @@ import java.io.RandomAccessFile;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import at.rovo.caching.drum.ByteSerializer;
 import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.DrumUtil;
 
@@ -64,22 +65,45 @@ public class Util
 		}
 	}
 	
+	/**
+	 * <p>Returns the host name of a URL</p>
+	 * 
+	 * @param url The URL to extract the host name from
+	 * @return The host name of a URL
+	 */
 	public static String getHostname(String url)
 	{
 		return "http://"+getPLDofURL(url);
 	}
 	
+	/**
+	 * <p>Returns the directory path of a URL without its domain-part.</p>
+	 * <p> F.e the directory path of <em> 
+	 * http://http://irl.cs.tamu.edu/people/hsin-tsang/papers/www2008.pdf</em>
+	 * is <em>hsing-tsang/papers/www2008.pdf</em>.</p>
+	 * 
+	 * @param url The URL to extract the 
+	 * @return The directory path of the given URL
+	 */
 	public static String getDirectoryPathOfUrl(String url)
 	{
 		// get the pay level domain of the URL
-		String PLD = getPLDofURL(url);
+		String PLD = Util.getPLDofURL(url);
 		// find the pay level domain in the URL and set the cursor
 		// behind the end of the URL and return the rest of the URL
 		String path = url.substring(url.indexOf(PLD)+PLD.length());
 		return path;
 	}
 	
-	public static <V> void printCacheContent(String name, List<Long> keys, Class<V> valueClass) throws IOException 
+	/**
+	 * <p>Prints the content of the backing data store to the log file.</p>
+	 * 
+	 * @param name The name of the backing data store
+	 * @param keys The keys of the objects to print to the log file
+	 * @param valueClass The data type of the value object associated to the key
+	 * @throws IOException If any error during reading the data store occurs
+	 */
+	public static <V extends ByteSerializer<V>> void printCacheContent(String name, List<Long> keys, Class<V> valueClass) throws IOException 
 	{
 		if (logger.isInfoEnabled())
 			logger.info("Data contained in cache.db:");
@@ -92,7 +116,7 @@ public class Util
 		Pair<Long, V> data = null;
 		do
 		{
-			data = getNextEntry(cacheFile, valueClass);
+			data = Util.getNextEntry(cacheFile, valueClass);
 			if (data != null)
 			{
 				keys.add(data.getFirst());
@@ -110,7 +134,14 @@ public class Util
 		cacheFile.close();
 	}
 	
-	public static <V> Pair<Long, V> getNextEntry(RandomAccessFile cacheFile, Class<V> valueClass) 
+	/**
+	 * <p>Returns the next key/value pair from the backing data store.</p>
+	 * 
+	 * @param cacheFile The name of the backing data store
+	 * @param valueClass The data type of the value object associated to the key
+	 * @return A key/value tuple
+	 */
+	public static <V extends ByteSerializer<V>> Pair<Long, V> getNextEntry(RandomAccessFile cacheFile, Class<V> valueClass) 
 	{
 		// Retrieve the key from the file
 		try
@@ -125,7 +156,24 @@ public class Util
 			{
 				byte[] byteValue = new byte[valueSize];
 				cacheFile.read(byteValue);
-				V value = DrumUtil.deserialize(byteValue, valueClass);
+				V value = null;
+				// as we have our own serialization mechanism, we have to ensure
+				// that these objects are serialized appropriately
+				if (ByteSerializer.class.isAssignableFrom(valueClass))
+				{
+					try
+					{
+						value = valueClass.newInstance();
+					}
+					catch (IllegalAccessException | InstantiationException e)
+					{
+						e.printStackTrace();
+					}
+					value = ((ByteSerializer<V>)value).readBytes(byteValue);
+				}
+				// should not happen - but in case we refactor again leaf it in
+				else
+					value = DrumUtil.deserialize(byteValue, valueClass);
 				return new Pair<Long, V>(key, value);
 			}
 			return new Pair<Long, V>(key, null);
