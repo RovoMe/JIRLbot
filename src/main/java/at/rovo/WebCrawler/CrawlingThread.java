@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.util.DrumUtil;
 
 /**
  * <p>This class is a worker object to read and parse a web page for

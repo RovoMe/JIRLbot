@@ -3,11 +3,12 @@ package at.rovo.WebCrawler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import at.rovo.caching.drum.Drum;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.IDispatcher;
 import at.rovo.caching.drum.IDrum;
 import at.rovo.caching.drum.IDrumListener;
-import at.rovo.caching.drum.StringSerializer;
+import at.rovo.caching.drum.data.StringSerializer;
+import at.rovo.caching.drum.util.DrumUtil;
 
 /**
  * <p>For caching robots.txt, we have another DRUM structure called RobotsCache, 
@@ -23,25 +24,25 @@ public class RobotsCache
 	private int numBuckets = 0;
 	private IDrum<HostData,StringSerializer> drum = null;
 	
-	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize)
+	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		this.drum = new Drum<>(name, numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class);
 	}
 	
-	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize)
+	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		this.drum = new Drum<>("robotsCache", numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class);
 	}
 	
-	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener)
+	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		this.drum = new Drum<>(name, numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class, listener);
 	}
 	
-	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener)
+	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		this.drum = new Drum<>("robotsCache", numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class, listener);
@@ -61,12 +62,12 @@ public class RobotsCache
 		this.drum.update(key, hostData);
 	}
 	
-	public void synchronize()
+	public void synchronize() throws DrumException
 	{
 		this.drum.synchronize();
 	}
 	
-	public void dispose()
+	public void dispose() throws DrumException
 	{
 		this.drum.dispose();
 	}

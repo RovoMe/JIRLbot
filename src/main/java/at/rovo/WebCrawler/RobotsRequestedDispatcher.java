@@ -3,7 +3,7 @@ package at.rovo.WebCrawler;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import at.rovo.caching.drum.NullDispatcher;
-import at.rovo.caching.drum.StringSerializer;
+import at.rovo.caching.drum.data.StringSerializer;
 
 public class RobotsRequestedDispatcher extends NullDispatcher<HostData, StringSerializer> 
 {

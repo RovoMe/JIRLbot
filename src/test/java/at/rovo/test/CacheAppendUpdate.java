@@ -15,10 +15,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import at.rovo.WebCrawler.PLDData;
-import at.rovo.caching.drum.CacheFile;
+import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.DrumOperation;
-import at.rovo.caching.drum.InMemoryData;
-import at.rovo.caching.drum.StringSerializer;
+import at.rovo.caching.drum.data.StringSerializer;
+import at.rovo.caching.drum.internal.InMemoryData;
+import at.rovo.caching.drum.internal.backend.cacheFile.CacheFile;
 
 public class CacheAppendUpdate
 {
@@ -41,7 +42,7 @@ public class CacheAppendUpdate
 	}
 	
 	@Test
-	public void test()
+	public void test() throws DrumException
 	{
 		CacheFile<PLDData> cache = new CacheFile<>(this.testDir+"/cache.db","test",PLDData.class);
 

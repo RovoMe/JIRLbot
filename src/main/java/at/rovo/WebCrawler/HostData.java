@@ -1,7 +1,7 @@
 package at.rovo.WebCrawler;
 
-import at.rovo.caching.drum.ByteSerializer;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.data.ByteSerializer;
+import at.rovo.caching.drum.util.DrumUtil;
 
 public class HostData implements ByteSerializer<HostData>
 {

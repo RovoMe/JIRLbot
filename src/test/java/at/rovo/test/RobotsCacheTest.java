@@ -1,12 +1,11 @@
 package at.rovo.test;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.Assert;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Assert;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -18,7 +17,7 @@ import at.rovo.WebCrawler.RobotsCacheDispatcher;
 import at.rovo.WebCrawler.RobotsCachePassedListener;
 import at.rovo.WebCrawler.Util;
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.util.DrumUtil;
 
 public class RobotsCacheTest implements RobotsCachePassedListener
 {
@@ -101,15 +100,19 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 		
 		try
 		{
-			logger.info("Example of RobotsCache usage:");
-			logger.info("----------------------");
-			logger.info("");
-			
-			logger.info("Initializing Drum ... ");
+			if (logger.isInfoEnabled())
+			{
+				logger.info("Example of RobotsCache usage:");
+				logger.info("----------------------");
+				logger.info("");
+				
+				logger.info("Initializing Drum ... ");
+			}
 			RobotsCacheDispatcher dispatcher = new RobotsCacheDispatcher();
 			dispatcher.addRobotsCachePassedListener(this);
 			this.robotsCache = new RobotsCache(this.robotsCacheName, dispatcher, 16, 64);
-			logger.info("done!");
+			if (logger.isInfoEnabled())
+				logger.info("done!");
 			
 			String url1 = "http://winf.at/rss-feed.php"; // key: -8811650085514601110
 			String url2 = "http://www.informatik.tuwien.ac.at/aktuelles/672"; // key: -7476758895180383974
@@ -122,7 +125,8 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			try
 			{
 				Thread.sleep(2000);
-				logger.info("Moking robot.txt update of 'http://www.tuwien.ac.at'");
+				if (logger.isInfoEnabled())
+					logger.info("Moking robot.txt update of 'http://www.tuwien.ac.at'");
 			}
 			catch (InterruptedException e) 
 			{
@@ -159,7 +163,8 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			try
 			{
 				Thread.sleep(2000);
-				logger.info("Moking robot.txt update of 'http://www.winf.at'");
+				if (logger.isInfoEnabled())
+					logger.info("Moking robot.txt update of 'http://www.winf.at'");
 			}
 			catch (InterruptedException e) 
 			{
@@ -174,28 +179,39 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			this.robotsCache.check(url7); // URL 7 violates a rule defined in the robots.txt file
 			                              // so it should neither pass nor return an unable to check event
 		}
-		catch(DrumException e)
+		catch (DrumException dEx)
 		{
-			System.err.println(e.getLocalizedMessage());
-			e.printStackTrace();
-		} 
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+			dEx.printStackTrace();
+		}
 		finally
 		{
 			// disposing the robots.txt cache forces a synchronization which results
 			// in the robots.txt of winf.at to be written to the cache
-			logger.info("Disposing robotsCache ... ");			
+			if (logger.isInfoEnabled())
+				logger.info("Disposing robotsCache ... ");			
 			if (this.robotsCache != null)
-				this.robotsCache.dispose();
-			logger.info("done!");
+				try
+				{
+					this.robotsCache.dispose();
+				}
+				catch (DrumException e)
+				{
+					if (logger.isErrorEnabled())
+						logger.error(e.getMessage());
+				}
+			if (logger.isInfoEnabled())
+				logger.info("done!");
 		}
 		
-		Assert.assertEquals(true, this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/links/"));
-		Assert.assertEquals(true, this.urlsPassed.contains("http://www.informatik.tuwien.ac.at/aktuelles/672"));
-		Assert.assertEquals(true, this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/faqs/"));
-		Assert.assertEquals(true, this.urlsPassed.contains("http://www.winf.at"));
-		Assert.assertEquals(4, this.urlsPassed.size());
-		Assert.assertEquals(false, this.urlsPassed.contains("http://www.facebook.com/events/350068195090400"));
-		Assert.assertEquals(false, this.urlsPassed.contains("http://winf.at/rss-feed.php"));
+		Assert.assertTrue("'http://www.tuwien.ac.at/metanavigation/links/' not contained in passed URLs!", this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/links/"));
+		Assert.assertTrue("'http://www.informatik.tuwien.ac.at/aktuelles/672' not contained in passed URLs!", this.urlsPassed.contains("http://www.informatik.tuwien.ac.at/aktuelles/672"));
+		Assert.assertTrue("'http://www.tuwien.ac.at/metanavigation/faqs/' not contained in passed URLs!", this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/faqs/"));
+		Assert.assertTrue("'http://www.winf.at' not contained in passed URLs!", this.urlsPassed.contains("http://www.winf.at"));
+		Assert.assertEquals("Size of passed URLs differs!", 4, this.urlsPassed.size(), 0);
+		Assert.assertFalse("'http://www.facebook.com/events/350068195090400' contained in passed URLs!", this.urlsPassed.contains("http://www.facebook.com/events/350068195090400"));
+		Assert.assertFalse("'http://winf.at/rss-feed.php' contained in passed URLs!", this.urlsPassed.contains("http://winf.at/rss-feed.php"));
 		
 		try
 		{
@@ -205,22 +221,22 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			}
 			catch (InterruptedException e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
 			List<Long> keys = new ArrayList<>();
 			Util.printCacheContent(this.robotsCacheName, keys, HostData.class);
-			assertNotNull(keys);
-			Assert.assertEquals(2, keys.size());
+			Assert.assertNotNull("No keys found in the robots cache!", keys);
+			Assert.assertEquals("Expected number of keys inside robots cache do not match!", 2, keys.size(), 0);
 			// winf.at
-			Assert.assertEquals(new Long(-8811650085514601110L), keys.get(0));
+			Assert.assertEquals("Key for 'winf.at' does not match!", new Long(-8811650085514601110L), keys.get(0), 0);
 			// tuwien
-			Assert.assertEquals(new Long(-7476758895180383974L), keys.get(1));
+			Assert.assertEquals("Key for 'tuwien.ac.at' does not macht!", new Long(-7476758895180383974L), keys.get(1), 0);
 		}
-		catch (IOException e)
+		catch (IOException | DrumException e)
 		{
-			System.err.println(e.getLocalizedMessage());
+			if (logger.isErrorEnabled())
+				logger.error(e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -228,7 +244,8 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 	@Override
 	public void handleURLsPassed(String url) 
 	{
-		logger.info("check passed for URL: "+url);
+		if (logger.isInfoEnabled())
+			logger.info("check passed for URL: "+url);
 		if (!this.urlsPassed.contains(url))
 			this.urlsPassed.add(url);
 	}
@@ -236,7 +253,8 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 	@Override
 	public void handleUnableToCheck(String url) 
 	{
-		logger.info("unable to check URL: "+url);
+		if (logger.isInfoEnabled())
+			logger.info("unable to check URL: "+url);
 		// URL would be forwarded to robotsRequest which manages
 		// the download of a robots.txt file
 		// here we will just send an imaginary robots.txt for certain hosts
@@ -293,6 +311,8 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			}
 			catch (IOException e)
 			{
+				if (logger.isErrorEnabled())
+					logger.error(e.getMessage());
 				e.printStackTrace();
 			}
 		}

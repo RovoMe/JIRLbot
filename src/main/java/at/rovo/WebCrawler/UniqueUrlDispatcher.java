@@ -5,7 +5,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import at.rovo.caching.drum.NullDispatcher;
-import at.rovo.caching.drum.StringSerializer;
+import at.rovo.caching.drum.data.StringSerializer;
 
 public class UniqueUrlDispatcher extends NullDispatcher<StringSerializer,StringSerializer>
 {

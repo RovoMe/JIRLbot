@@ -17,7 +17,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.util.DrumUtil;
 
 public abstract class DrumCacheLister<V extends Serializable, A extends Serializable> extends 
 	JPanel implements ActionListener, TreeSelectionListener

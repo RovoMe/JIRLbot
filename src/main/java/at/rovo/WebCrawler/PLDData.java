@@ -3,8 +3,8 @@ package at.rovo.WebCrawler;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import at.rovo.caching.drum.AppendableData;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.data.AppendableData;
+import at.rovo.caching.drum.util.DrumUtil;
 
 public class PLDData implements AppendableData<PLDData>, Comparable<PLDData>
 {

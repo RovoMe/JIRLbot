@@ -1,11 +1,12 @@
 package at.rovo.WebCrawler;
 
 import at.rovo.caching.drum.Drum;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.IDispatcher;
 import at.rovo.caching.drum.IDrum;
 import at.rovo.caching.drum.IDrumListener;
-import at.rovo.caching.drum.StringSerializer;
+import at.rovo.caching.drum.data.StringSerializer;
+import at.rovo.caching.drum.util.DrumUtil;
 
 /**
  * <p>URLSeen stores a set of URLs inside a DRUM cache. {@link #checkUpdate(Integer, String, String)} 
@@ -20,7 +21,7 @@ public class URLseen
 	private IDrum<StringSerializer, StringSerializer> drum = null;
 	private int numBuckets = 0;
 		
-	public URLseen(IDispatcher<StringSerializer, StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener)
+	public URLseen(IDispatcher<StringSerializer, StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		this.drum = new Drum<>("urlSeen", numBuckets, bucketByteSize, dispatcher, StringSerializer.class, StringSerializer.class, listener);
@@ -37,12 +38,12 @@ public class URLseen
 		this.drum.checkUpdate(DrumUtil.hash(aux), valString, auxString);
 	}
 	
-	public void synchronize()
+	public void synchronize() throws DrumException
 	{
 		this.drum.synchronize();
 	}
 	
-	public void dispose()
+	public void dispose() throws DrumException
 	{
 		this.drum.dispose();
 	}

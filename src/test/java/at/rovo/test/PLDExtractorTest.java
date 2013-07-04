@@ -1,6 +1,6 @@
 package at.rovo.test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import at.rovo.WebCrawler.Util;
 

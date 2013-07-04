@@ -18,10 +18,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import at.rovo.caching.drum.DrumUtil;
+import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.IDrumListener;
-import at.rovo.caching.drum.NamedThreadFactory;
 import at.rovo.caching.drum.event.DrumEvent;
+import at.rovo.caching.drum.util.DrumUtil;
+import at.rovo.caching.drum.util.NamedThreadFactory;
 
 /**
  * <p>IRLbot is the web crawler published by Lee, Leonard, Wang and Loguinov in
@@ -211,21 +212,63 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 		// initialization of the urlSeen part
 		UniqueUrlDispatcher uniqueURLDispatcher = new UniqueUrlDispatcher();
 		uniqueURLDispatcher.addUniqueUrlListener(this);
-		this.urlSeen = new URLseen(uniqueURLDispatcher, numURLseenBuckets, URLseenBytes, this);
+		try
+		{
+			this.urlSeen = new URLseen(uniqueURLDispatcher, numURLseenBuckets, URLseenBytes, this);
+		}
+		catch (DrumException dEx)
+		{
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+			dEx.printStackTrace();
+			System.exit(1);
+		}
 		
 		// initialization of the STAR part 
-		this.pldIndegree = new STAR(numSTARbuckets, STARbytes, this);
+		try
+		{
+			this.pldIndegree = new STAR(numSTARbuckets, STARbytes, this);
+		}
+		catch (DrumException dEx)
+		{
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+			dEx.printStackTrace();
+			System.exit(1);
+		}
 		this.pldIndegree.addCheckSpamUrlListener(this);
 		this.beast = new BEAST();
 		this.beast.addBEASTBudgetPassedListener(this);
 		
+		// initialize the RobotsCache part
 		RobotsCacheDispatcher robotsCacheDispatcher = new RobotsCacheDispatcher();
 		robotsCacheDispatcher.addRobotsCachePassedListener(this);
-		this.robotsCache = new RobotsCache(robotsCacheDispatcher, numRobotsCacheBuckets, RobotsCacheBytes, this);
+		try
+		{
+			this.robotsCache = new RobotsCache(robotsCacheDispatcher, numRobotsCacheBuckets, RobotsCacheBytes, this);
+		}
+		catch (DrumException dEx)
+		{
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+			dEx.printStackTrace();
+			System.exit(1);
+		}
 		
+		// initialize the RobotsRequested part
 		RobotsRequestedDispatcher robotsRequestedDispatcher = new RobotsRequestedDispatcher();
 		robotsRequestedDispatcher.addRobotsRequestedListener(this);
-		this.robotsRequested = new RobotsRequested(robotsRequestedDispatcher, numRobotsRequestedBuckets, RobotsRequestedBytes, this);
+		try
+		{
+			this.robotsRequested = new RobotsRequested(robotsRequestedDispatcher, numRobotsRequestedBuckets, RobotsRequestedBytes, this);
+		}
+		catch (DrumException dEx)
+		{
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+			dEx.printStackTrace();
+			System.exit(1);
+		}
 		
 		this.robotsCheckQueue = new LinkedBlockingQueue<>();
 		this.robotsRequestQueue = new LinkedBlockingQueue<>();
@@ -389,15 +432,6 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 			
 			this.informOnNumURLsCrawledTotalChanged(this.numPagesCrawledTotal.get());
 			this.informOnNumURLsCrawledSuccessChanged(this.numPagesCrawledSuccess.get());
-			
-//			try
-//			{
-//				Thread.sleep(10);
-//			}
-//			catch (InterruptedException e)
-//			{
-//				e.printStackTrace();
-//			}
 		}
 		if (logger.isInfoEnabled())
 		{
@@ -505,10 +539,18 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 	
 	public void synchronize()
 	{
-		this.urlSeen.synchronize();
-		this.pldIndegree.synchronize();
-		this.robotsCache.synchronize();
-		this.robotsRequested.synchronize();
+		try
+		{
+			this.urlSeen.synchronize();
+			this.pldIndegree.synchronize();
+			this.robotsCache.synchronize();
+			this.robotsRequested.synchronize();
+		}
+		catch (DrumException dEx)
+		{
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+		}
 	}
 	
 	/**
@@ -522,11 +564,19 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 		this.robotsCheckQueueEmptier.interrupt();
 		this.robotsRequestedQueueEmptier.interrupt();
 		
-		this.urlSeen.dispose();
-		this.pldIndegree.dispose();
-		this.beast.dispose();
-		this.robotsCache.dispose();
-		this.robotsRequested.dispose();
+		try
+		{
+			this.urlSeen.dispose();
+			this.pldIndegree.dispose();
+			this.beast.dispose();
+			this.robotsCache.dispose();
+			this.robotsRequested.dispose();
+		}
+		catch (DrumException dEx)
+		{
+			if (logger.isErrorEnabled())
+				logger.error(dEx.getMessage());
+		}
 		
 		// This will make the executor accept no new threads
 		// and finish all existing threads in the queue
@@ -543,7 +593,8 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 		} 
 
 		
-		logger.info("Finished crawling, all threads shutdown");
+		if (logger.isInfoEnabled())
+			logger.info("Finished crawling, all threads shutdown");
 	}
 
 	@Override
