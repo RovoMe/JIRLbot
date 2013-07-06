@@ -12,6 +12,7 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 
   <properties>
     <property name="crawlerFile">log/CrawlerTest.log</property>
+    <property name="drumFile">log/DRUMTest.log</property>
     <property name="testFile">log/Test.log</property>
   </properties>
 
@@ -37,6 +38,9 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
       <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
     </Console>
     <File name="CrawlerFile" fileName="${crawlerFile}" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+    </File>
+    <File name="DRUMFile" fileName="${drumFile}" append="false">
       <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
     </File>
     <File name="TestFile" fileName="${testFile}" append="false">
@@ -70,10 +74,14 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 	  <appender-ref ref="TestFile"/>
 	</logger>
 	
-	<logger name="at.rovo" level="info" additivity="true">
+ 	<logger name="at.rovo.caching.drum" level="debug" additivity="false">
+	  <appender-ref ref="DRUMFile"/>
+	</logger>
+	
+	<logger name="at.rovo.crawler" level="info" additivity="true">
   	  <appender-ref ref="Console"/>
   	</logger>
-  	
+  	  	
     <root level="error">
       <appender-ref ref="Error"/>
     </root>

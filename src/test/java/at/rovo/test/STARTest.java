@@ -163,6 +163,8 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			// kufstein: 1
 			// campus: 3
 			
+			this.star.synchronize();
+			
 			this.star.check(pld1);
 			
 			// we need to synchronize here as not enough data is stored into the
@@ -257,7 +259,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			
 			Assert.assertEquals(pld1, this.checkReturnURL);
 			Assert.assertEquals(50, this.checkReturnBudget);
-			
+
 			logger.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
 			
 			this.star.check(pld5);
