@@ -8,11 +8,10 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 	%p : Level of the event
 	%t : Thread that produced the logging-event
  -->
-<configuration status="warn" name="WebCrawler" packages="at.rovo.crawler">
+<configuration status="warn" name="Crawler" packages="at.rovo.crawler">
 
   <properties>
-    <property name="crawlerFile">log/CrawlerTest.log</property>
-    <property name="testFile">log/Test.log</property>
+    <property name="fileName">log/Crawler.log</property>
   </properties>
 
   <appenders>
@@ -36,44 +35,44 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
       <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
       <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
     </Console>
-    <File name="CrawlerFile" fileName="${crawlerFile}" append="false">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
-    </File>
-    <File name="TestFile" fileName="${testFile}" append="false">
+    <File name="CrawlerFile" fileName="${fileName}" append="false">
       <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
     </File>
   </appenders>
   
-  <loggers>
-  	<!-- IRLbot classes -->
-  	<logger name="at.rovo.crawler.STAR" level="debug" additivity="false">
-      <appender-ref ref="CrawlerFile"/>
+  <loggers>	
+	<logger name="at.rovo.crawler.IRLbot" level="info" additivity="true">
+	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.RobotsCache" level="info" additivity="false">
+	<logger name="at.rovo.crawler.CrawlingThread" level="error" additivity="false">
+	  <appender-ref ref="CrawlerFile"/>
+	</logger>
+	<logger name="at.rovo.crawler.UniqueUrlDispatcher" level="error" additivity="false">
+	  <appender-ref ref="CrawlerFile"/>
+	</logger>
+	<logger name="at.rovo.crawler.STAR" level="error" additivity="false">
+	  <appender-ref ref="CrawlerFile"/>
+	</logger>
+	<logger name="at.rovo.crawler.STARDispatcher" level="error" additivity="false">
+	  <appender-ref ref="CrawlerFile"/>
+	</logger>
+	<logger name="at.rovo.crawler.BEAST" level="error" additivity="false">
+	  <appender-ref ref="CrawlerFile"/>
+	</logger>
+	<logger name="at.rovo.crawler.RobotsCache" level="error" additivity="false">
+	  <appender-ref ref="CrawlerFile"/>
+	</logger>
+	<logger name="at.rovo.crawler.RobotsRequested" level="error" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
 	<logger name="at.rovo.crawler.RobotsCacheDispatcher" level="error" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.IRLbotUtil" level="info" additivity="false">
-	  <appender-ref ref="CrawlerFile"/>
-	</logger>
-
-	<!-- Test classes -->  
-	<logger name="at.rovo.test.RobotsCacheTest" level="info" additivity="false">
-	  <appender-ref ref="TestFile"/>
-	</logger>
-	<logger name="at.rovo.test.STARTest" level="debug" additivity="false">
-	  <appender-ref ref="TestFile"/>
-	</logger>
-	<logger name="at.rovo.test.CacheAppendUpdate" level="debug" additivity="false">
-	  <appender-ref ref="TestFile"/>
-	</logger>
 	
-	<logger name="at.rovo" level="info" additivity="true">
+		
+  	<logger name="at.rovo" level="info" additivity="true">
   	  <appender-ref ref="Console"/>
   	</logger>
-  	
     <root level="error">
       <appender-ref ref="Error"/>
     </root>

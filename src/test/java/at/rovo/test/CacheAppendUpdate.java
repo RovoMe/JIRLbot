@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,20 +13,37 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import at.rovo.WebCrawler.PLDData;
 import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.DrumOperation;
 import at.rovo.caching.drum.data.StringSerializer;
 import at.rovo.caching.drum.internal.InMemoryData;
 import at.rovo.caching.drum.internal.backend.cacheFile.CacheFile;
+import at.rovo.crawler.bean.PLDData;
 
 public class CacheAppendUpdate
 {
-	private final static Logger logger = LogManager.getLogger(CacheAppendUpdate.class);
+	/** The logger of this class **/
+	private static Logger logger;
 	private File testDir = null;
 
+	@BeforeClass
+	public static void initLogger() throws URISyntaxException
+	{
+		String path = DrumTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
+		System.setProperty("log4j.configurationFile", path);
+		logger = LogManager.getLogger(CacheAppendUpdate.class);
+	}
+	
+	@AfterClass
+	public static void cleanLogger()
+	{
+		System.clearProperty("log4j.configurationFile");
+	}
+	
 	@Before
 	public void init()
 	{
@@ -47,8 +65,7 @@ public class CacheAppendUpdate
 		CacheFile<PLDData> cache = new CacheFile<>(this.testDir+"/cache.db","test",PLDData.class);
 
 		// old file on disk to merge with: (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)	
-		if (logger.isInfoEnabled())
-			logger.info("Creating original data - (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)");
+		logger.debug("Creating original data - (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)");
 		
 		PLDData data1 = new PLDData();
 		data1.setHash(1);
@@ -102,8 +119,7 @@ public class CacheAppendUpdate
 		
 		cache.reset();
 		
-		if (logger.isInfoEnabled())
-			logger.info("Adding new data to integrate into an existing entry - new batch: (5; 4; <2, 3, 7, 88>), (76; 2; <4, 13>)");
+		logger.debug("Adding new data to integrate into an existing entry - new batch: (5; 4; <2, 3, 7, 88>), (76; 2; <4, 13>)");
 		
 		// new batch, sorted as described above: (5; 4; <2, 3, 7, 88>), (76; 2; <4, 13>)
 		PLDData data2v2 = new PLDData();
