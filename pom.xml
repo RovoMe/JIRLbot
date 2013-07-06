@@ -47,7 +47,6 @@
   <description>Java implementation of the IRLbot web crawler as presented by Lee, Leonard, Wang and Loguinov in their paper "IRLbot: Scaling to 6 Billion Pages and Beyond"</description>  
   
   <build>
-    <sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

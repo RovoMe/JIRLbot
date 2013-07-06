@@ -35,7 +35,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 	@BeforeClass
 	public static void initLogger() throws URISyntaxException
 	{
-		String path = DrumTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
+		String path = RobotsCacheTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
 		System.setProperty("log4j.configurationFile", path);
 		logger = LogManager.getLogger(RobotsCacheTest.class);
 	}

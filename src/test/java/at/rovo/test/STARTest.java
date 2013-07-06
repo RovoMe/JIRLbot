@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.junit.Assert;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -37,7 +37,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 	@BeforeClass
 	public static void initLogger() throws URISyntaxException
 	{
-		String path = DrumTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
+		String path = STARTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
 		System.setProperty("log4j.configurationFile", path);
 		logger = LogManager.getLogger(STARTest.class);
 	}
