@@ -64,11 +64,6 @@ public class RobotsCache
 		this.drum.update(key, hostData);
 	}
 	
-	public void synchronize() throws DrumException
-	{
-		this.drum.synchronize();
-	}
-	
 	public void dispose() throws DrumException
 	{
 		this.drum.dispose();

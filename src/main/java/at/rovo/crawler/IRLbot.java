@@ -502,10 +502,6 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 		logger.info("crawler stopped: {}", this.stopRequested);
 		logger.info("size of the queue of URLs to read: {}", this.toCrawl.size());
 		
-		// work is done, ensure that all the data in the memory or 
-		// in the disk files is synchronized with the backing database
-		this.synchronize();
-		
 		// This will make the executor accept no new threads
 		// and finish all existing threads in the queue
 		executor.shutdown();
@@ -604,21 +600,6 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 		}
 	}
 	
-	public void synchronize()
-	{
-		try
-		{
-			this.urlSeen.synchronize();
-			this.pldIndegree.synchronize();
-			this.robotsCache.synchronize();
-			this.robotsRequested.synchronize();
-		}
-		catch (DrumException dEx)
-		{
-			logger.catching(dEx);
-		}
-	}
-	
 	/**
 	 * <p>
 	 * Stops the current crawling process which leads to a synchronization of
@@ -660,7 +641,6 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
 			e.printStackTrace();
 		} 
 
-		
 		logger.info("Finished crawling, all threads shutdown");
 	}
 

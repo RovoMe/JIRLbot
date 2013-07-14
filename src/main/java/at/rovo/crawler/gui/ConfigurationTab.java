@@ -1,7 +1,6 @@
 package at.rovo.crawler.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -26,7 +25,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 		
 	private final JButton btnAddSeedPage = new JButton("add");
 	private final JButton btnClearList = new JButton("clear");
-	private final JButton btnSynchronize = new JButton("synchronize");
 	private final JButton btnStartStopCrawl = new JButton("start");
 	private final JButton btnPauseResumeCrawl = new JButton("pause");
 	
@@ -139,8 +137,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 	
 	private JPanel initButtonsSection()
 	{		
-		this.btnSynchronize.addActionListener(this);
-		this.btnSynchronize.setEnabled(false);
 		// create a start/stop button
 		this.btnStartStopCrawl.addActionListener(this);
 		this.btnStartStopCrawl.setEnabled(false);
@@ -167,8 +163,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 
 		// create the button-area with a space between the two buttons
 		Box btnBox = Box.createHorizontalBox();
-		btnBox.add(this.btnSynchronize);
-		btnBox.add (Box.createHorizontalStrut (10));
 		btnBox.add(this.btnStartStopCrawl);
 		btnBox.add (Box.createHorizontalStrut (10));
 		btnBox.add(this.btnPauseResumeCrawl);
@@ -254,7 +248,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 		else if ("clear".equals(command))
 		{
 			this.btnClearList.setEnabled(false);
-			this.btnSynchronize.setEnabled(false);
 			this.btnStartStopCrawl.setEnabled(false);
 			this.btnPauseResumeCrawl.setEnabled(false);
 			this.listModel.clear();
@@ -265,7 +258,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 			this.txtAddSeedPage.setEnabled(false);
 			this.lstSeedPages.setEnabled(false);
 			this.btnClearList.setEnabled(false);
-			this.btnSynchronize.setEnabled(true);
 			this.btnPauseResumeCrawl.setEnabled(true);
 			this.btnStartStopCrawl.setText("stop");
 			
@@ -324,7 +316,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 				this.btnClearList.setEnabled(true);
 			else
 				this.btnClearList.setEnabled(false);
-			this.btnSynchronize.setEnabled(false);
 			this.btnPauseResumeCrawl.setEnabled(false);
 			this.btnStartStopCrawl.setText("start");
 			
@@ -348,12 +339,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 		else if ("resume".equals(command))
 		{
 			this.btnPauseResumeCrawl.setText("pause");
-		}
-		else if ("synchronize".equals(command))
-		{
-			this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			Manager.getInstance().getIRLbot().synchronize();
-			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
 

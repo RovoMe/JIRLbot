@@ -43,11 +43,6 @@ public class URLseen
 		this.drum.checkUpdate(DrumUtil.hash(aux), valString, auxString);
 	}
 	
-	public void synchronize() throws DrumException
-	{
-		this.drum.synchronize();
-	}
-	
 	public void dispose() throws DrumException
 	{
 		this.drum.dispose();

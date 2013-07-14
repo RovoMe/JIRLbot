@@ -31,11 +31,6 @@ public class RobotsRequested
 		this.drum.checkUpdate(DrumUtil.hash(hostName), hostData, new StringSerializer(hostName));
 	}
 	
-	public void synchronize() throws DrumException
-	{
-		this.drum.synchronize();
-	}
-	
 	public void dispose() throws DrumException
 	{
 		this.drum.dispose();

@@ -22,6 +22,39 @@ import at.rovo.crawler.bean.HostData;
 import at.rovo.crawler.interfaces.RobotsCachePassedListener;
 import at.rovo.crawler.util.IRLbotUtil;
 
+/**
+ * <p>
+ * This test case initializes a DRUM instance to manage robot.txt files and PLDs
+ * queried for those robot.txt files.
+ * </p>
+ * <p>
+ * Example of RobotsCache usage:
+ * </p>
+ * 
+ * <code>
+ * Initializing Drum ... <br/>
+ * done!<br/>
+ * <br/>
+ * unable to check URL: http://winf.at/rss-feed.php<br/>
+ * unable to check URL: http://www.informatik.tuwien.ac.at/aktuelles/672<br/>
+ * unable to check URL: http://www.tuwien.ac.at/metanavigation/faqs/<br/>
+ * Moking robot.txt update of 'http://www.tuwien.ac.at' and 'http://winf.at'<br/>
+ * check passed for URL: http://winf.at/rss-feed.php<br/>
+ * check passed for URL: http://www.tuwien.ac.at/metanavigation/faqs/<br/>
+ * unable to check URL: http://www.facebook.com/events/350068195090400<br/>
+ * check passed for URL: http://www.tuwien.ac.at/metanavigation/links/<br/>
+ * check passed for URL: http://www.informatik.tuwien.ac.at/aktuelles/672<br/>
+ * Disposing robotsCache ... <br/>
+ * check passed for URL: http://www.winf.at<br/>
+ * check passed for URL: http://www.winf.at<br/>
+ * check passed for URL: http://www.informatik.tuwien.ac.at/aktuelles/672<br/>
+ * done!<br/>
+ * <br/>
+ * Data contained in cache.db:<br/>
+ * Key: -8811650085514601110, Value: http://winf.at<br/>
+ * Key: -7476758895180383974, Value: http://tuwien.ac.at<br/>
+ * </code>
+ */
 public class RobotsCacheTest implements RobotsCachePassedListener
 {
 	/** The logger of this class **/
@@ -79,37 +112,6 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			this.cache.mkdir();
 	}
 	
-	/**
-	 * Example of RobotsCache usage:
-	 *
-	 * Initializing Drum ... 
-	 * done!
-	 * 
-	 * unable to check URL: http://www.informatik.tuwien.ac.at/aktuelles/672
-	 * unable to check URL: http://www.tuwien.ac.at/metanavigation/faqs/
-	 * 
-	 * Moking robot.txt update of 'http://www.tuwien.ac.at'
-	 * check passed for URL: http://www.tuwien.ac.at/metanavigation/faqs/
-	 * 
-	 * unable to check URL: http://winf.at/rss-feed.php
-	 * unable to check URL: http://winf.at/rss-feed.php
-	 * unable to check URL: http://www.winf.at
-	 * unable to check URL: http://www.facebook.com/events/350068195090400
-	 * check passed for URL: http://www.tuwien.ac.at/metanavigation/links/
-	 * check passed for URL: http://www.informatik.tuwien.ac.at/aktuelles/672
-	 * check passed for URL: http://www.informatik.tuwien.ac.at/aktuelles/672
-	 * 
-	 * Moking robot.txt update of 'http://www.winf.at'
-	 * 
-	 * Disposing robotsCache ... 
-	 * check passed for URL: http://www.winf.at
-	 * done!
-	 * 
-	 * Data contained in cache.db:
-	 * Key: -8811650085514601110, Value: http://winf.at
-	 * Key: -7476758895180383974, Value: http://tuwien.ac.at
-	 */
-	
 	@Test
 	public void RobotsCacheDrumTest()
 	{
@@ -128,35 +130,58 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			this.robotsCache = new RobotsCache(this.robotsCacheName, dispatcher, 16, 64);
 			logger.info("done!");
 			
-			String url1 = "http://winf.at/rss-feed.php"; // key: -8811650085514601110
-			String url2 = "http://www.informatik.tuwien.ac.at/aktuelles/672"; // key: -7476758895180383974
-			String url3 = "http://www.tuwien.ac.at/metanavigation/faqs/"; // key: -7476758895180383974
+			// key: -8811650085514601110
+			String url1 = "http://winf.at/rss-feed.php"; 
+			// key: -7476758895180383974
+			String url2 = "http://www.informatik.tuwien.ac.at/aktuelles/672";
+			// key: -7476758895180383974
+			String url3 = "http://www.tuwien.ac.at/metanavigation/faqs/"; 
 			
-			this.robotsCache.check(url1); // new host: http://winf.at - no robots.txt available by now
-			this.robotsCache.check(url2); // new hosts: http://tuwien.ac.at - no robots.txt available by now
-			this.robotsCache.check(url3); // host: http://tuwien.ac.at - robots.txt value was not yet updated!
+			this.robotsCache.check(url1); // new host: http://winf.at - no
+										  // robots.txt available by now
+			this.robotsCache.check(url2); // new hosts: http://tuwien.ac.at - no
+										  // robots.txt available by now
+			this.robotsCache.check(url3); // host: http://tuwien.ac.at -
+										  // robots.txt value was not yet
+										  // updated!
 			
 			try
 			{
 				Thread.sleep(2000);
-				logger.info("Moking robot.txt update of 'http://www.tuwien.ac.at'");
+				logger.info("Moking robot.txt update of 'http://www.tuwien.ac.at' and 'http://winf.at'");
 			}
 			catch (InterruptedException e) 
 			{
 				e.printStackTrace();
 			}
-						
-			this.robotsCache.check(url3); // re-check host: http://tuwien.ac.at - should now be available
-			String url4 = "http://www.facebook.com/events/350068195090400"; // key: -7849402421258767002
-			String url5 = "http://www.tuwien.ac.at/metanavigation/links/"; // key: -7476758895180383974
+									
+			// the merge will cause all data which was written to local disk 
+			// files before to be merged into the backing data store
+			this.robotsCache.check(url3);
 			
-			this.robotsCache.check(url4); // new host: http://facebook.com - no robots.txt available
-			this.robotsCache.check(url5); // should pass as inside robotsCache http://tuwien.ac.at 
-			                              // got updated with the robots.txt value!
+			// key: -7849402421258767002
+			String url4 = "http://www.facebook.com/events/350068195090400";
+			// key: -7476758895180383974
+			String url5 = "http://www.tuwien.ac.at/metanavigation/links/"; 
+			
+			this.robotsCache.check(url4); // new host: http://facebook.com - no
+										  // robots.txt available
+			this.robotsCache.check(url5); // should pass as inside robotsCache
+										  // http://tuwien.ac.at got updated 
+										  // with the robots.txt value!
 			this.robotsCache.check(url2); // re-check url2! should pass now
-			this.robotsCache.check(url1); // re-check url1 (winf.at) will still not pass as the query still
-			                              // resides in the bucket file and was not merged into the data 
-			                              // storage
+			this.robotsCache.check(url1); // re-check url1 (winf.at) will pass
+										  // as the first check lead to a write 
+										  // to disk bucket and through multiple 
+										  // checking for url2 or url3 a merge 
+										  // was forced which stored all values 
+										  // contained in any of the disk bucket 
+										  // file into the data store and 
+										  // returned a UNIQUE_KEY result which
+										  // furthermore lead to a
+										  // handleUnableToCheck() method
+										  // invocation which furthermore mocked
+										  // a robot.txt for winf.at
 			try
 			{
 				Thread.sleep(1000);
@@ -165,31 +190,20 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			{
 				e.printStackTrace();
 			}
-			this.robotsCache.check(url2); // re-check url2! should pass too, but as it is already contained
-			                              // only one entry should be in the list!	
+			this.robotsCache.check(url2); // re-check url2! should pass too, but
+										  // as it is already contained only
+										  // one entry should be in the list!
 			
-			String url6 = "http://www.winf.at"; // key: -8811650085514601110
-			this.robotsCache.check(url6); // this query for the PLD winf.at will result in a the 3 queries for
-			                              // winf.at to be written to the bucket files and then be merged into
-			                              // the data store. But as no robots.txt entries for the PLD are
-			                              // available it will return an unable to check event
-			try
-			{
-				Thread.sleep(2000);
-				logger.info("Moking robot.txt update of 'http://www.winf.at'");
-			}
-			catch (InterruptedException e) 
-			{
-				e.printStackTrace();
-			}
+			// key: -8811650085514601110
+			String url6 = "http://www.winf.at"; 
 			
-			this.robotsCache.check(url6); // this query will pass as in the meantime the backing drum structure
-			                              // received an update for the robots.txt file of the PLD. The query
-			                              // therefore is processed after the update and should succeed.
+			this.robotsCache.check(url6); 
 			
 			String url7 = "http://www.winf.at/forum/shouldNotReturnAValue";
-			this.robotsCache.check(url7); // URL 7 violates a rule defined in the robots.txt file
-			                              // so it should neither pass nor return an unable to check event
+			this.robotsCache.check(url7); // URL 7 violates a rule defined in 
+										  // the robots.txt file so it should 
+										  // neither pass nor return an unable 
+										  // to check event
 		}
 		catch (DrumException dEx)
 		{
@@ -212,15 +226,17 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 				}
 			}
 			logger.info("done!");
+			
+			logger.info("URLs passed: {}", this.urlsPassed);
 		}
 		
 		Assert.assertTrue("'http://www.tuwien.ac.at/metanavigation/links/' not contained in passed URLs!", this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/links/"));
 		Assert.assertTrue("'http://www.informatik.tuwien.ac.at/aktuelles/672' not contained in passed URLs!", this.urlsPassed.contains("http://www.informatik.tuwien.ac.at/aktuelles/672"));
 		Assert.assertTrue("'http://www.tuwien.ac.at/metanavigation/faqs/' not contained in passed URLs!", this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/faqs/"));
 		Assert.assertTrue("'http://www.winf.at' not contained in passed URLs!", this.urlsPassed.contains("http://www.winf.at"));
-		Assert.assertEquals("Size of passed URLs differs!", 4, this.urlsPassed.size(), 0);
+		Assert.assertTrue("'http://winf.at/rss-feed.php' not contained in passed URL!", this.urlsPassed.contains("http://winf.at/rss-feed.php"));
+		Assert.assertEquals("Size of passed URLs differs!", 5, this.urlsPassed.size(), 0);
 		Assert.assertFalse("'http://www.facebook.com/events/350068195090400' contained in passed URLs!", this.urlsPassed.contains("http://www.facebook.com/events/350068195090400"));
-		Assert.assertFalse("'http://winf.at/rss-feed.php' contained in passed URLs!", this.urlsPassed.contains("http://winf.at/rss-feed.php"));
 		
 		try
 		{

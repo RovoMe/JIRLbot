@@ -18,7 +18,7 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 
   <appenders>
   	<Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
       <!-- ThresholdFilter returns the onMatch result if the level in the LogEvent 
       is the same or more specific than the configured level and the onMismatch 
       value otherwise. For example, if the ThresholdFilter is configured with 
@@ -34,23 +34,23 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
     </Console>
     <!-- ... show them on the error-console! -->
     <Console name="Error" target="SYSTEM_ERR">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
       <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
     </Console>
     <File name="CrawlerFile" fileName="${crawlerFile}" append="false">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
     </File>
     <File name="DRUMFile" fileName="${drumFile}" append="false">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
     </File>
     <File name="TestFile" fileName="${testFile}" append="false">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
     </File>
   </appenders>
   
   <loggers>
   	<!-- IRLbot classes -->
-  	<logger name="at.rovo.crawler.STAR" level="debug" additivity="false">
+  	<logger name="at.rovo.crawler.STAR" level="trace" additivity="false">
       <appender-ref ref="CrawlerFile"/>
 	</logger>
 	<logger name="at.rovo.crawler.RobotsCache" level="info" additivity="false">
@@ -59,7 +59,7 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 	<logger name="at.rovo.crawler.RobotsCacheDispatcher" level="error" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.IRLbotUtil" level="info" additivity="false">
+	<logger name="at.rovo.crawler.util.IRLbotUtil" level="info" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
 
@@ -72,6 +72,14 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 	</logger>
 	<logger name="at.rovo.test.CacheAppendUpdate" level="debug" additivity="false">
 	  <appender-ref ref="TestFile"/>
+	</logger>
+	
+	<logger name="at.rovo.caching.drum.util.DrumUtil" level="debug" additivity="false">
+	  <appender-ref ref="TestFile"/>
+	</logger>
+	
+	<logger name="at.rovo.caching.drum.internal.backend.cacheFile.CacheFile" level="trace" additivity="false">
+	  <appender-ref ref="DRUMFile"/>
 	</logger>
 	
  	<logger name="at.rovo.caching.drum" level="debug" additivity="false">

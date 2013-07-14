@@ -282,14 +282,37 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		PLDData data = new PLDData();
 		data.setHash(key);
 		// check if the URL is present in the topN set
-		if (this.topSet.contains(data))
+		if (this.containsData(data))
 		{
-			data = this.topSet.ceiling(data);
+			data = this.getData(data);
 			for (CheckSpamUrlListener listener : this.listeners)
 				listener.handleSpamCheck(aux, data.getBudget());
 		}
 		else
 			this.drum.check(key, new StringSerializer(aux));
+	}
+	
+	/**
+	 * <p>
+	 * Returns <code>true</code> if the topSet contains the specified element.
+	 * </p>
+	 * 
+	 * @param data
+	 *        The PLDData object which should be checked for containment in the
+	 *        topSet
+	 * @return <code>true</code> if this element is contained in the topSet,
+	 *         false otherwise
+	 */
+	private boolean containsData(PLDData data)
+	{
+		Iterator<PLDData> iterator = this.topSet.iterator();
+		while (iterator.hasNext())
+		{
+			PLDData obj = iterator.next();
+			if (obj.getHash() == data.getHash())
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -354,7 +377,7 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		// changed between the last and the current iteration and calculate the
 		// new budget for those PLDs that changed and update their budget in
 		// DRUM too.
-		int curBudget = 10000;
+		int curBudget = this.maxBudget;
 		while (topIter.hasNext() && compIter.hasNext())
 		{
 			PLDData top = topIter.next();
@@ -362,6 +385,8 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 
 			if (top.getHash() != comp.getHash() || top.getBudget() > curBudget)
 			{
+				logger.trace("Recalculating Budget for {} with a budget of {} - previous set contained {} with a budget of {}", 
+						top.getHash(), top.getBudget(), comp.getHash(), curBudget);
 				top.setBudget(this.calculateBudget(top.getIndegree()));
 				curBudget = top.getBudget();
 				this.drum.checkUpdate(top.getHash(), top);
@@ -371,6 +396,8 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		while (topIter.hasNext())
 		{
 			PLDData top = topIter.next();
+			logger.trace("Recalculating Budget for {} with a budget of {} - current budget {}", 
+					top.getHash(), top.getBudget(), curBudget);
 			top.setBudget(this.calculateBudget(top.getIndegree()));
 			this.drum.checkUpdate(top.getHash(), top);
 		}
@@ -380,6 +407,8 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		while (compIter.hasNext())
 		{
 			PLDData comp = compIter.next();
+			logger.trace("Recalculating Budget for {} with a budget of {}", 
+					comp.getHash(), 10);
 			comp.setBudget(10);
 			this.drum.checkUpdate(comp.getHash(), comp);
 		}
@@ -407,8 +436,16 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		// entry
 		// we need to retrieve the element first and append the data to the
 		// entry
-		if (this.topSet.contains(data))
-			this.topSet.ceiling(data).append(data);
+		if (this.containsData(data))
+		{
+			// as updating a PLDData object does not change the position of the
+			// object in the data structure, which is internally sorted, we 
+			// remove the object and add it again
+			PLDData tmp = this.getData(data);
+			this.topSet.remove(tmp);
+			tmp.append(data);
+			this.topSet.add(tmp);
+		}
 		else
 			this.topSet.add(data);
 
@@ -435,6 +472,35 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 
 		// create a copy for the next iteration
 		this.compareSet = new ConcurrentSkipListSet<>(this.topSet);
+	}
+	
+	/**
+	 * <p>
+	 * Returns the PLDData element from the topSet if it includes an element
+	 * with the same hash number. Otherwise null is returned.
+	 * </p>
+	 * <p>
+	 * Note that this method is necessary as topSet.ceiling(data) object returns
+	 * the first element instead of the object at the position that equals (= 
+	 * same hash) the provided one.
+	 * </p>
+	 * 
+	 * @param data
+	 *        A PLDData object whose correspondent object should be looked up in
+	 *        the topSet.
+	 * @return The PLDData object in the topSet which shares the same hash key
+	 *         as the PLDData object provided
+	 */
+	private PLDData getData(PLDData data)
+	{
+		Iterator<PLDData> iterator = this.topSet.iterator();
+		while (iterator.hasNext())
+		{
+			PLDData obj = iterator.next();
+			if (obj.getHash() == data.getHash())
+				return obj;
+		}
+		return null;
 	}
 
 	/**
@@ -468,10 +534,8 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	private int calculateBudget(int indegree)
 	{
 		// each PLD x starts with a default budget B0, which is dynamically
-		// adjusted
-		// using some function F(dx) as x's in-degree dx changes
-		// Budget Bx represents the number of pages that are allowed to pass
-		// from x
+		// adjusted using some function F(dx) as x's in-degree dx changes Budget
+		// Bx represents the number of pages that are allowed to pass from x
 		// (including all hosts and subdomains in x) to crawling threads every T
 		// time units.
 
@@ -492,22 +556,6 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 
 	/**
 	 * <p>
-	 * Forces a synchronization which results in all the data currently hold in
-	 * memory buffers and disk buckets to be synchronized with the backing data
-	 * store.
-	 * </p>
-	 * 
-	 * @throws DrumException
-	 *             If any exception during the synchronization of the backing
-	 *             DRUM cache occurs
-	 */
-	public void synchronize() throws DrumException
-	{
-		this.drum.synchronize();
-	}
-
-	/**
-	 * <p>
 	 * Disposes the backing DRUM structure and frees resources hold by DRUM.
 	 * </p>
 	 * 
@@ -517,6 +565,7 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 */
 	public void dispose() throws DrumException
 	{
+		this.checkOrderHasChanged();
 		if (logger.isDebugEnabled())
 			this.printTop(100);
 
