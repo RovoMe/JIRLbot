@@ -88,7 +88,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 	 * unable to check URL: http://www.informatik.tuwien.ac.at/aktuelles/672
 	 * unable to check URL: http://www.tuwien.ac.at/metanavigation/faqs/
 	 * 
-	 * Moking robot.txt update of 'http://www.tuwien.ac.at'
+	 * Mocking robot.txt update of 'http://www.tuwien.ac.at'
 	 * check passed for URL: http://www.tuwien.ac.at/metanavigation/faqs/
 	 * 
 	 * unable to check URL: http://winf.at/rss-feed.php
@@ -99,7 +99,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 	 * check passed for URL: http://www.informatik.tuwien.ac.at/aktuelles/672
 	 * check passed for URL: http://www.informatik.tuwien.ac.at/aktuelles/672
 	 * 
-	 * Moking robot.txt update of 'http://www.winf.at'
+	 * Mocking robot.txt update of 'http://www.winf.at'
 	 * 
 	 * Disposing robotsCache ... 
 	 * check passed for URL: http://www.winf.at
@@ -125,6 +125,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 		
 			RobotsCacheDispatcher dispatcher = new RobotsCacheDispatcher();
 			dispatcher.addRobotsCachePassedListener(this);
+			
 			this.robotsCache = new RobotsCache(this.robotsCacheName, dispatcher, 16, 64);
 			logger.info("done!");
 			
