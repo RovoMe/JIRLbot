@@ -97,11 +97,11 @@ public class PLDData implements AppendableData<PLDData>, Comparable<PLDData>
 	{
 		int size = 12+8*this.indegreeNeighbors.size()+4;
 		byte[] totalBytes = new byte[size];
-		byte[] keyBytes = DrumUtil.long2bytes(this.hash);
+		byte[] keyBytes = DrumUtil.long2bytes(this.hash); // 8 bytes
 		System.arraycopy(keyBytes, 0, totalBytes, 0, 8);
 		byte[] neighborSize = DrumUtil.int2bytes(this.indegreeNeighbors.size());
-		System.arraycopy(neighborSize, 0, totalBytes, 8, 4);
-		if (this.indegreeNeighbors.size() > 0);
+		System.arraycopy(neighborSize, 0, totalBytes, 8, 4); // 4 bytes
+		if (this.indegreeNeighbors.size() > 0); // 8*indegreeNeighbors.size bytes
 		int pos = 12;
 		for (Long neighbor : this.indegreeNeighbors)
 		{
@@ -110,7 +110,7 @@ public class PLDData implements AppendableData<PLDData>, Comparable<PLDData>
 			pos += 8;
 		}
 		byte[] budget = DrumUtil.int2bytes(this.budget);
-		System.arraycopy(budget, 0, totalBytes, pos, 4);
+		System.arraycopy(budget, 0, totalBytes, pos, 4); // 4 bytes
 		
 		return totalBytes;
 	}

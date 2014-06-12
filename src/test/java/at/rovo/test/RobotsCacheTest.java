@@ -38,7 +38,7 @@ import at.rovo.crawler.util.IRLbotUtil;
  * unable to check URL: http://winf.at/rss-feed.php<br/>
  * unable to check URL: http://www.informatik.tuwien.ac.at/aktuelles/672<br/>
  * unable to check URL: http://www.tuwien.ac.at/metanavigation/faqs/<br/>
- * Moking robot.txt update of 'http://www.tuwien.ac.at' and 'http://winf.at'<br/>
+ * Mocking robot.txt update of 'http://www.tuwien.ac.at' and 'http://winf.at'<br/>
  * check passed for URL: http://winf.at/rss-feed.php<br/>
  * check passed for URL: http://www.tuwien.ac.at/metanavigation/faqs/<br/>
  * unable to check URL: http://www.facebook.com/events/350068195090400<br/>

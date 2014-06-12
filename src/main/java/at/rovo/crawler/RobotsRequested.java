@@ -22,7 +22,19 @@ public class RobotsRequested
 	public RobotsRequested(IDispatcher<HostData, StringSerializer> dispatcher, int numBuckets, int byteSize, IDrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
-		this.drum = new Drum<>("robotsRequested", numBuckets, byteSize, dispatcher, HostData.class, StringSerializer.class, listener);
+		try
+		{
+			this.drum = new Drum.Builder<>("robotsRequested",HostData.class, StringSerializer.class)
+				.numBucket(numBuckets)
+				.bufferSize(byteSize)
+				.dispatcher(dispatcher)
+				.listener(listener)
+				.build();
+		}
+		catch (Exception e)
+		{
+			throw new DrumException(e.getLocalizedMessage(), e);
+		}
 	}
 	
 	public void request(HostData hostData, String hostName)

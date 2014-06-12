@@ -86,8 +86,18 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	public STAR() throws DrumException
 	{
 		this.numBuckets = 1024;
-		this.drum = new Drum<>("pldIndegree", 1024, 65536, this, PLDData.class,
-				StringSerializer.class);
+		try
+		{
+		this.drum = new Drum.Builder<>("pldIndegree", PLDData.class, StringSerializer.class)
+				.numBucket(1024)
+				.bufferSize(65536)
+				.dispatcher(this)
+				.build();
+		}
+		catch (Exception e)
+		{
+		throw new DrumException(e.getLocalizedMessage(), e);
+		}
 		this.listeners = new CopyOnWriteArrayList<>();
 	}
 
@@ -112,8 +122,19 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 			throws DrumException
 	{
 		this.numBuckets = numBuckets;
-		this.drum = new Drum<>("pldIndegree", numBuckets, bucketByteSize, this,
-				PLDData.class, StringSerializer.class, listener);
+		try
+		{
+			this.drum = new Drum.Builder<>("pldIndegree", PLDData.class, StringSerializer.class)
+					.numBucket(numBuckets)
+					.bufferSize(bucketByteSize)
+					.dispatcher(this)
+					.listener(listener)
+					.build();
+		}
+		catch (Exception e)
+		{
+			throw new DrumException(e.getLocalizedMessage(), e);
+		}
 		this.listeners = new CopyOnWriteArrayList<>();
 	}
 

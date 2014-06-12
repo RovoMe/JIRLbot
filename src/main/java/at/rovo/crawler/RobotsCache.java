@@ -31,25 +31,36 @@ public class RobotsCache
 	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize) throws DrumException
 	{
 		this.numBuckets = numBuckets;
-		this.drum = new Drum<>(name, numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class);
-	}
-	
-	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize) throws DrumException
-	{
-		this.numBuckets = numBuckets;
-		this.drum = new Drum<>("robotsCache", numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class);
-	}
-	
-	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
-	{
-		this.numBuckets = numBuckets;
-		this.drum = new Drum<>(name, numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class, listener);
+		try
+		{
+			this.drum = new Drum.Builder<>(name, HostData.class, StringSerializer.class)
+					.numBucket(numBuckets)
+					.bufferSize(bucketByteSize)
+					.dispatcher(dispatcher)
+					.build();
+		}
+		catch (Exception e)
+		{
+			throw new DrumException(e.getLocalizedMessage(), e);
+		}
 	}
 	
 	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
-		this.drum = new Drum<>("robotsCache", numBuckets, bucketByteSize, dispatcher, HostData.class, StringSerializer.class, listener);
+		try
+		{
+			this.drum = new Drum.Builder<>("robotsCache", HostData.class, StringSerializer.class)
+					.numBucket(numBuckets)
+					.bufferSize(bucketByteSize)
+					.dispatcher(dispatcher)
+					.listener(listener)
+					.build();
+		}
+		catch (Exception e)
+		{
+			throw new DrumException(e.getLocalizedMessage(), e);
+		}
 	}
 		
 	public void check(String url)

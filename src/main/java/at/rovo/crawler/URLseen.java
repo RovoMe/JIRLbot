@@ -29,7 +29,19 @@ public class URLseen
 	public URLseen(IDispatcher<StringSerializer, StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
-		this.drum = new Drum<>("urlSeen", numBuckets, bucketByteSize, dispatcher, StringSerializer.class, StringSerializer.class, listener);
+		try
+		{
+			this.drum = new Drum.Builder<>("urlSeen", StringSerializer.class, StringSerializer.class)
+					.numBucket(numBuckets)
+					.bufferSize(bucketByteSize)
+					.dispatcher(dispatcher)
+					.listener(listener)
+					.build();
+		}
+		catch (Exception e)
+		{
+			throw new DrumException(e.getLocalizedMessage(), e);
+		}
 	}
 	
 	public void checkUpdate(String value, String aux)
