@@ -2,22 +2,12 @@ package at.rovo.test;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import at.rovo.caching.drum.DrumException;
@@ -27,81 +17,31 @@ import at.rovo.crawler.STAR;
 import at.rovo.crawler.bean.PLDData;
 import at.rovo.crawler.interfaces.CheckSpamUrlListener;
 
-public class STARTest implements IDrumListener, CheckSpamUrlListener
+public class STARTest extends BaseCacheTest implements IDrumListener, CheckSpamUrlListener
 {
-	/** The logger of this class **/
-	private static Logger logger;
 	private STAR star = null;
-	private File cache = null;
 	private String checkReturnURL = null;
 	private int checkReturnBudget = 0;
 	private boolean closed = false;
 	
-	@BeforeClass
-	public static void initLogger() throws URISyntaxException
-	{
-		String path = STARTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
-		System.setProperty("log4j.configurationFile", path);
-		logger = LogManager.getLogger(STARTest.class);
-	}
-	
-	@AfterClass
-	public static void cleanLogger()
-	{
-		System.clearProperty("log4j.configurationFile");
-	}
-	
-	@Before
-	public void init()
-	{
-		String appDirPath = System.getProperty("user.dir");
-		File appDir = new File(appDirPath);
-		if (appDir.isDirectory())
-		{
-			String[] items = appDir.list();
-			for (String item : items)
-			{
-				if (item.endsWith("cache"))
-				{
-					this.cache = new File(item);
-					if (this.cache.isDirectory() && "cache".equals(this.cache.getName()))
-					{
-						try
-						{
-							Files.walkFileTree(this.cache.toPath(), new CacheFileDeleter());
-						}
-						catch (IOException e)
-						{
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-		if (this.cache == null)
-			this.cache = new File (appDir.getAbsoluteFile()+"/cache");
-		if (!this.cache.exists())
-			this.cache.mkdir();
-	}
-	
 	@Test
 	public void testSTAR_Top3()
 	{
-		logger.info("Testing STAR for top3 set");
+		LOG.info("Testing STAR for top3 set");
 		this.testTopN(3);
 	}
 	
 	@Test
 	public void testSTAR_Top6()
-	{		
-		logger.info("Testing STAR for top6 set");
+	{
+		LOG.info("Testing STAR for top6 set");
 		this.testTopN(6);
 	}
 	
 	@Test
 	public void testSTAR_Top10()
 	{
-		logger.info("Testing STAR for top10 set");
+		LOG.info("Testing STAR for top10 set");
 		this.testTopN(10);
 	}
 	
@@ -124,7 +64,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			String pld7 = "http://www.fh-kufstein.ac.at"; //-1122805766134849723
 			String pld8 = "http://www.it-campus.at";      // -710095566944599804
 			
-			Set<String> plds = new TreeSet<String>();
+			Set<String> plds = new TreeSet<>();
 			plds.add(pld1); // http://www.tuwien.ac.at<--http://www.winf.at (-427820934381562479<--356380646382129811)
 			plds.add(pld2); // http://www.univie.ac.at<--http://www.winf.at (-408508820557862601<--356380646382129811)
 			plds.add(pld3); // http://www.winf.at<--http://www.winf.at (356380646382129811<--356380646382129811)
@@ -136,10 +76,10 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (InterruptedException e)
 			{
-				logger.catching(e);
+				LOG.catching(e);
 			}
 			
-			plds = new TreeSet<String>();
+			plds = new TreeSet<>();
 			plds.add(pld1); // http://www.tuwien.ac.at<--http://www.it-campus.at (-427820934381562479<---710095566944599804)
 			plds.add(pld2); // http://www.univie.ac.at<--http://www.it-campus.at (-408508820557862601<---710095566944599804)
 			plds.add(pld3); // http://www.winf.at<--http://www.it-campus.at (356380646382129811<---710095566944599804)
@@ -156,10 +96,10 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (InterruptedException e)
 			{
-				logger.catching(e);
+				LOG.catching(e);
 			}
 			
-			plds = new TreeSet<String>();
+			plds = new TreeSet<>();
 			plds.add(pld1); // http://www.tuwien.ac.at<--http://www.tuwien.ac.at (-427820934381562479<---427820934381562479)
 			plds.add(pld3); // http://www.winf.at<--http://www.tuwien.ac.at (356380646382129811<---427820934381562479)
 			plds.add(pld8); // http://www.it-campus.at<--http://www.tuwien.ac.at (-710095566944599804<---427820934381562479)
@@ -171,10 +111,10 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (InterruptedException e)
 			{
-				logger.catching(e);
+				LOG.catching(e);
 			}
 			
-			plds = new TreeSet<String>();
+			plds = new TreeSet<>();
 			plds.add(pld1); // http://www.tuwien.ac.at<--http://www.winf.at (-427820934381562479<--356380646382129811)
 			plds.add(pld2); // http://www.univie.ac.at<--http://www.winf.at (-408508820557862601<--356380646382129811)
 			plds.add(pld3); // http://www.winf.at<--http://www.winf.at (356380646382129811<--356380646382129811)
@@ -187,10 +127,10 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (InterruptedException e)
 			{
-				logger.catching(e);
+				LOG.catching(e);
 			}
 			
-			plds = new TreeSet<String>();
+			plds = new TreeSet<>();
 			plds.add(pld5); // http://www.technikum-wien.at<--http://www.technikum-wien.at (-798419812034467833<---798419812034467833)
 			plds.add(pld8); // http://www.it-campus.at<--http://www.technikum-wien.at (-710095566944599804<---798419812034467833)
 			this.star.update(pld5, plds);
@@ -201,7 +141,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (InterruptedException e)
 			{
-				logger.catching(e);
+				LOG.catching(e);
 			}
 					
 			// in-degree value:
@@ -222,7 +162,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (InterruptedException e)
 			{
-				logger.catching(e);
+				LOG.catching(e);
 			}
 			
 //			this.star.dispose();
@@ -269,7 +209,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 				assertEquals(44, pldList.get(7).getBudget());
 			
 			// test PLD names
-			PLDData test = null;
+			PLDData test;
 			if (topN > 0)
 			{
 				test = pldList.get(0);
@@ -316,7 +256,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			Assert.assertEquals(pld1, this.checkReturnURL); // tuwien.ac.at - 3
 			Assert.assertEquals(50, this.checkReturnBudget);
 
-			logger.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
+			LOG.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
 			
 			// entry is cached for top 10 and top 6 sets but not for top 3!
 			this.star.check(pld5); // technikum-wien.at - 2
@@ -328,21 +268,21 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			// any further
 			if (topN > 6)
 			{
-				logger.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
+				LOG.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
 				
 				Assert.assertEquals(pld5, this.checkReturnURL);
 				Assert.assertEquals(47, this.checkReturnBudget);
 				
 				// Entries is cached, so results should be available instantly
 				this.star.check(pld4);
-				
-				logger.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
+
+				LOG.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
 				Assert.assertEquals(pld4, this.checkReturnURL);
 				Assert.assertEquals(44, this.checkReturnBudget);
 			}
 			else if (topN > 3)
 			{
-				logger.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
+				LOG.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
 				
 				Assert.assertEquals(pld5, this.checkReturnURL);
 				Assert.assertEquals(47, this.checkReturnBudget);
@@ -350,8 +290,8 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 				// Entries will have to wait for the merge phase before a budget is returned
 				this.star.check(pld4);
 				this.star.dispose();
-				
-				logger.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
+
+				LOG.info("URL: {}; Budget: {}", this.checkReturnURL, this.checkReturnBudget);
 				Assert.assertNotSame(pld4, this.checkReturnURL);
 				Assert.assertEquals(10, this.checkReturnBudget);
 			}
@@ -364,7 +304,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 		}
 		catch (DrumException e)
 		{
-			logger.catching(e);
+			LOG.catching(e);
 		}
 		finally
 		{
@@ -376,8 +316,8 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 				}
 				catch (DrumException e)
 				{
-					if (logger.isErrorEnabled())
-						logger.error(e.getMessage());
+					if (LOG.isErrorEnabled())
+						LOG.error(e.getMessage());
 				}
 			}
 			this.closed = true;
@@ -397,8 +337,8 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 		this.checkReturnBudget = budget;
 	}
 	
-	@After
-	public void clean()
+	@Override
+	public void cleanDataDir()
 	{
 		if (this.star != null && !this.closed)
 		{
@@ -408,20 +348,7 @@ public class STARTest implements IDrumListener, CheckSpamUrlListener
 			}
 			catch (DrumException e)
 			{
-				logger.catching(e);
-			}
-		}
-		
-		File cache = this.cache;
-		if (cache.isDirectory() && "cache".equals(cache.getName()))
-		{
-			try
-			{
-				Files.walkFileTree(cache.toPath(), new CacheFileDeleter());
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
+				LOG.catching(e);
 			}
 		}
 	}

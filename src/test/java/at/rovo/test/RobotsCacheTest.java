@@ -55,80 +55,29 @@ import at.rovo.crawler.util.IRLbotUtil;
  * Key: -7476758895180383974, Value: http://tuwien.ac.at<br/>
  * </code>
  */
-public class RobotsCacheTest implements RobotsCachePassedListener
+public class RobotsCacheTest extends BaseCacheTest implements RobotsCachePassedListener
 {
-	/** The logger of this class **/
-	private static Logger logger; 
 	private RobotsCache robotsCache = null;
 	private List<String> urlsPassed = null;
-	private final String robotsCacheName = "RobotsCacheTest";
-	
-	private File cache = null;
-	
-	@BeforeClass
-	public static void initLogger() throws URISyntaxException
-	{
-		String path = RobotsCacheTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
-		System.setProperty("log4j.configurationFile", path);
-		logger = LogManager.getLogger(RobotsCacheTest.class);
-	}
-	
-	@AfterClass
-	public static void cleanLogger()
-	{
-		System.clearProperty("log4j.configurationFile");
-	}
-	
-	@Before
-	public void init()
-	{
-		String appDirPath = System.getProperty("user.dir");
-		File appDir = new File(appDirPath);
-		if (appDir.isDirectory())
-		{
-			String[] items = appDir.list();
-			for (String item : items)
-			{
-				if (item.endsWith("cache"))
-				{
-					this.cache = new File(item);
-					if (this.cache.isDirectory() && "cache".equals(this.cache.getName()))
-					{
-						try
-						{
-							Files.walkFileTree(this.cache.toPath(), new CacheFileDeleter());
-						}
-						catch (IOException e)
-						{
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-		if (this.cache == null)
-			this.cache = new File (appDir.getAbsoluteFile()+"/cache");
-		if (!this.cache.exists())
-			this.cache.mkdir();
-	}
-	
+
 	@Test
 	public void RobotsCacheDrumTest()
 	{
-		this.urlsPassed = new ArrayList<String>();
+		String robotsCacheName = "RobotsCacheTest";
+		this.urlsPassed = new ArrayList<>();
 		
 		try
 		{
-			logger.info("Example of RobotsCache usage:");
-			logger.info("----------------------");
-			logger.info("");
-				
-			logger.info("Initializing Drum ... ");
-		
+			LOG.info("Example of RobotsCache usage:");
+			LOG.info("----------------------");
+			LOG.info("");
+
+			LOG.info("Initializing Drum ... ");
+
 			RobotsCacheDispatcher dispatcher = new RobotsCacheDispatcher();
 			dispatcher.addRobotsCachePassedListener(this);
-			this.robotsCache = new RobotsCache(this.robotsCacheName, dispatcher, 16, 64);
-			logger.info("done!");
+			this.robotsCache = new RobotsCache(robotsCacheName, dispatcher, 16, 64);
+			LOG.info("done!");
 			
 			// key: -8811650085514601110
 			String url1 = "http://winf.at/rss-feed.php"; 
@@ -148,7 +97,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			try
 			{
 				Thread.sleep(2000);
-				logger.info("Moking robot.txt update of 'http://www.tuwien.ac.at' and 'http://winf.at'");
+				LOG.info("Moking robot.txt update of 'http://www.tuwien.ac.at' and 'http://winf.at'");
 			}
 			catch (InterruptedException e) 
 			{
@@ -207,13 +156,13 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 		}
 		catch (DrumException dEx)
 		{
-			logger.catching(dEx);
+			LOG.catching(dEx);
 		}
 		finally
 		{
 			// disposing the robots.txt cache forces a synchronization which results
 			// in the robots.txt of winf.at to be written to the cache
-			logger.info("Disposing robotsCache ... ");			
+			LOG.info("Disposing robotsCache ... ");
 			if (this.robotsCache != null)
 			{
 				try
@@ -222,12 +171,12 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 				}
 				catch (DrumException e)
 				{
-					logger.catching(e);
+					LOG.catching(e);
 				}
 			}
-			logger.info("done!");
-			
-			logger.info("URLs passed: {}", this.urlsPassed);
+			LOG.info("done!");
+
+			LOG.info("URLs passed: {}", this.urlsPassed);
 		}
 		
 		Assert.assertTrue("'http://www.tuwien.ac.at/metanavigation/links/' not contained in passed URLs!", this.urlsPassed.contains("http://www.tuwien.ac.at/metanavigation/links/"));
@@ -250,7 +199,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 			}
 			
 			List<Long> keys = new ArrayList<>();
-			DrumUtil.printCacheContent(this.robotsCacheName, keys, HostData.class);
+			DrumUtil.printCacheContent(robotsCacheName, keys, HostData.class);
 			Assert.assertNotNull("No keys found in the robots cache!", keys);
 			Assert.assertEquals("Expected number of keys inside robots cache do not match!", 2, keys.size(), 0);
 			// winf.at
@@ -260,14 +209,14 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 		}
 		catch (IOException | DrumException e)
 		{
-			logger.catching(e);
+			LOG.catching(e);
 		}
 	}
 	
 	@Override
 	public void handleURLsPassed(String url) 
 	{
-		logger.info("check passed for URL: {}", url);
+		LOG.info("check passed for URL: {}", url);
 		if (!this.urlsPassed.contains(url))
 			this.urlsPassed.add(url);
 	}
@@ -275,7 +224,7 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 	@Override
 	public void handleUnableToCheck(String url) 
 	{
-		logger.info("unable to check URL: {}", url);
+		LOG.info("unable to check URL: {}", url);
 		// URL would be forwarded to robotsRequest which manages
 		// the download of a robots.txt file
 		// here we will just send an imaginary robots.txt for certain hosts
@@ -317,23 +266,6 @@ public class RobotsCacheTest implements RobotsCachePassedListener
 				e.printStackTrace();
 			}
 			this.robotsCache.update(DrumUtil.hash(IRLbotUtil.getHostname(url)), new HostData(IRLbotUtil.getHostname(url), null, robotsTxt));
-		}
-	}
-	
-	@After
-	public void clean()
-	{
-		File cache = this.cache;
-		if (cache.isDirectory() && "cache".equals(cache.getName()))
-		{
-			try
-			{
-				Files.walkFileTree(cache.toPath(), new CacheFileDeleter());
-			}
-			catch (IOException e)
-			{
-				logger.catching(e);
-			}
 		}
 	}
 }

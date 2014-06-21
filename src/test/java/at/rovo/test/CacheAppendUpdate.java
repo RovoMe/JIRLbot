@@ -3,19 +3,11 @@ package at.rovo.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 import at.rovo.caching.drum.DrumException;
 import at.rovo.caching.drum.DrumOperation;
@@ -24,39 +16,22 @@ import at.rovo.caching.drum.internal.InMemoryData;
 import at.rovo.caching.drum.internal.backend.cacheFile.CacheFile;
 import at.rovo.crawler.bean.PLDData;
 
-public class CacheAppendUpdate
+public class CacheAppendUpdate extends BaseCacheTest
 {
-	/** The logger of this class **/
-	private static Logger logger;
 	private File testDir = null;
-
-	@BeforeClass
-	public static void initLogger() throws URISyntaxException
-	{
-		String path = CacheAppendUpdate.class.getResource("/log/log4j2-test.xml").toURI().getPath();
-		System.setProperty("log4j.configurationFile", path);
-		logger = LogManager.getLogger(CacheAppendUpdate.class);
-	}
 	
-	@AfterClass
-	public static void cleanLogger()
+	@Override
+	public void initDataDir() throws Exception
 	{
-		System.clearProperty("log4j.configurationFile");
-	}
-	
-	@Before
-	public void init()
-	{
-		// get application directory
-		String appDir = System.getProperty("user.dir");
-		
-		// check if the directories, the cache is located, exists
-		File cacheDir = new File(appDir+"/cache");
-		if (!cacheDir.exists())
-			cacheDir.mkdir();
+		// create the test cache directory
 		this.testDir = new File(cacheDir+"/test");
 		if (!this.testDir.exists())
-			this.testDir.mkdir();
+		{
+			if (!this.testDir.mkdir())
+			{
+				throw new Exception("Data directory of cache does not exist and could not get created!");
+			}
+		}
 	}
 	
 	@Test
@@ -64,8 +39,9 @@ public class CacheAppendUpdate
 	{
 		CacheFile<PLDData> cache = new CacheFile<>(this.testDir+"/cache.db","test",PLDData.class);
 
-		// old file on disk to merge with: (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)	
-		logger.debug("Creating original data - (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)");
+		// old file on disk to merge with: (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)
+		// parameters: (nodeId; number of linked elements; <each linked element>)
+		LOG.debug("Creating original data - (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)");
 		
 		PLDData data1 = new PLDData();
 		data1.setHash(1);
@@ -97,11 +73,12 @@ public class CacheAppendUpdate
 		{
 			cache.writeEntry(mem1, false);
 			cache.writeEntry(mem2, false);
-			cache.writeEntry(mem3, false);		
+			cache.writeEntry(mem3, false);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
+			Assert.fail(e.getLocalizedMessage());
 		}
 		
 		List<Long> keys = new ArrayList<>();
@@ -119,7 +96,7 @@ public class CacheAppendUpdate
 		
 		cache.reset();
 		
-		logger.debug("Adding new data to integrate into an existing entry - new batch: (5; 4; <2, 3, 7, 88>), (76; 2; <4, 13>)");
+		LOG.debug("Adding new data to integrate into an existing entry - new batch: (5; 4; <2, 3, 7, 88>), (76; 2; <4, 13>)");
 		
 		// new batch, sorted as described above: (5; 4; <2, 3, 7, 88>), (76; 2; <4, 13>)
 		PLDData data2v2 = new PLDData();
@@ -148,9 +125,10 @@ public class CacheAppendUpdate
 		catch (Exception e)
 		{
 			e.printStackTrace();
+			Assert.fail(e.getLocalizedMessage());
 		}		
 		
-		// new file produced in one pass: (1; 2; <3, 7>), 5; 5; <2, 3,  7, 19, 88), (76; 5; <4, 5, 13, 22, 88>)	
+		// new file produced in one pass: (1; 2; <3, 7>), (5; 5; <2, 3,  7, 19, 88), (76; 5; <4, 5, 13, 22, 88>)
 		keys.clear();
 		values.clear();
 		
@@ -172,22 +150,5 @@ public class CacheAppendUpdate
 		
 		// close the cache file so we can delete the cache.db file
 		cache.close();
-	}
-	
-	@After
-	public void clean()
-	{
-		File cache = this.testDir.getParentFile();
-		if (cache.isDirectory() && "cache".equals(cache.getName()))
-		{
-			try
-			{
-				Files.walkFileTree(cache.toPath(), new CacheFileDeleter());
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
 	}
 }
