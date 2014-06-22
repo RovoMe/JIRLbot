@@ -27,15 +27,15 @@ public abstract class BaseCacheTest
 	protected File cacheDir = null;
 
 	@BeforeClass
-	public static final void initLogger() throws URISyntaxException
+	public static void initLogger() throws URISyntaxException
 	{
-		String path = RobotsCacheTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
+		String path = BaseCacheTest.class.getResource("/log/log4j2-test.xml").toURI().getPath();
 		System.setProperty("log4j.configurationFile", path);
-		LOG = LogManager.getLogger(RobotsCacheTest.class);
+		LOG = LogManager.getLogger(BaseCacheTest.class);
 	}
 
 	@AfterClass
-	public static final void cleanLogger()
+	public static void cleanLogger()
 	{
 		System.clearProperty("log4j.configurationFile");
 	}
