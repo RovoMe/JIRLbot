@@ -14,16 +14,16 @@ import at.rovo.crawler.util.IRLbotUtil;
 
 /**
  * <p>
- * For caching robots.txt, we have another DRUM structure called RobotsCache,
- * which supports asynchronous check and update operations
+ * For caching robots.txt, we have another <em>DRUM</em> structure called
+ * RobotsCache, which supports asynchronous check and update operations
  * </p>
  * 
  * @author Roman Vottner
  */
-public class RobotsCache
+public final class RobotsCache
 {
 	/** The logger of this class **/
-	private final static Logger logger = LogManager.getLogger(IRLbot.class); 
+	private final static Logger LOG = LogManager.getLogger(IRLbot.class);
 	
 	private int numBuckets = 0;
 	private IDrum<HostData,StringSerializer> drum = null;
@@ -65,13 +65,13 @@ public class RobotsCache
 		
 	public void check(String url)
 	{
-		logger.debug("Checking URL {} for robots.txt compliance on host: {}", url, IRLbotUtil.getHostname(url));
+		LOG.debug("Checking URL {} for robots.txt compliance on host: {}", url, IRLbotUtil.getHostname(url));
 		this.drum.check(DrumUtil.hash(IRLbotUtil.getHostname(url)), new StringSerializer(url));
 	}
 	
 	public void update(Long key, HostData hostData)
 	{
-		logger.debug("Receiving update on requested robots.txt for host {}", hostData.getHostName());
+		LOG.debug("Receiving update on requested robots.txt for host {}", hostData.getHostName());
 		this.drum.update(key, hostData);
 	}
 	

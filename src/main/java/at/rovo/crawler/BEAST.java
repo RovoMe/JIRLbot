@@ -14,28 +14,36 @@ import at.rovo.crawler.interfaces.BEASTBudgetPassedListener;
 import at.rovo.crawler.util.IRLbotUtil;
 
 /**
- * <p>This is an implementation of the Budget Enforcement with Anti-Spam tactics 
- * (BEAST) structure presented by Lee, Leonard, Wang and Loguinov in their paper
- * 'IRLbot: Scaling to 6 Billion Pages and Beyond'.</p>
- * <p>BEAST administers a {@link List} of {@link Queue}s which contain the URLs 
- * and their actual budget, which was calculated by {@link STAR} beforehand. New
- * URLs, which are provided via {@link #checkBudgetOfURL(String, int)}, get 
- * arranged into the first queue which has still room according to the number of 
- * URLs of the same pay level domain within the queue and the provided budget-value 
- * that indicates the capacity of pay level dependent URLs in a queue.</p>
- * <p>If all queues have exhausted their capacity for a certain URL of a pay level
- * domain, the URL and its budget will get stored in a left-over queue which will
- * be split up into n new queues, depending on the current number of queues, which 
- * are added to the end of the list of queues, after all queues in the list of 
- * queues have been read. The data contained within the left-over queue is spread
- * across the newly added queues.</p>
+ * <p>
+ * This is an implementation of the <em>Budget Enforcement with Anti-Spam
+ * tactics (BEAST)</em> structure presented by Lee, Leonard, Wang and Loguinov
+ * in their paper <em>IRLbot: Scaling to 6 Billion Pages and Beyond</em>.
+ * </p>
+ * <p>
+ * BEAST administers a {@link List} of {@link Queue}s which contain the URLs
+ * and their actual budget, which was calculated by {@link STAR} beforehand.
+ * New URLs, which are provided via {@link #checkBudgetOfURL(String, int)}, get
+ * arranged into the first queue which has still room according to the number
+ * of URLs of the same pay level domain within the queue and the provided
+ * budget-value that indicates the capacity of pay level dependent URLs in a
+ * queue.
+ * </p>
+ * <p>
+ * If all queues have exhausted their capacity for a certain URL of a pay level
+ * domain, the URL and its budget will get stored in a left-over queue which
+ * will be split up into n new queues, depending on the current number of
+ * queues, which are added to the end of the list of queues, after all queues
+ * in the list of queues have been read. The data contained within the
+ * left-over queue is spread across the newly added queues.
+ * </p>
  * 
  * @author Roman Vottner
  */
-public class BEAST 
+@SuppressWarnings("unused")
+public final class BEAST
 {
 	/** The logger of this class **/
-	private final static Logger logger = LogManager.getLogger(BEAST.class);
+	private final static Logger LOG = LogManager.getLogger(BEAST.class);
 	
 	/** The {@link List} of expandable queues **/
 	private List<Queue<Pair<String, Integer>>> queues = null;
@@ -54,27 +62,31 @@ public class BEAST
 	private boolean startOff = false;
 	/** Classes that need to be informed of URLs passing the budget check **/
 	private List<BEASTBudgetPassedListener> listeners = null;
+	/** The object to use for the synchronization lock **/
+	private final Object syncObj = new Object();
 	
 	/**
-	 * <p>Instantiates a new BEAST object</p>
+	 * <p>
+	 * Instantiates a new BEAST object
+	 * </p>
 	 */
 	public BEAST()
 	{
-		this.queues = new ArrayList<Queue<Pair<String, Integer>>>();
-		this.currentQueue = new LinkedList<Pair<String,Integer>>();
-		this.leftOverQueue = new LinkedList<Pair<String, Integer>>();
-		this.pldBudgets = new HashMap<Queue<Pair<String, Integer>>, Map<String, Integer>>();
+		this.queues = new ArrayList<>();
+		this.currentQueue = new LinkedList<>();
+		this.leftOverQueue = new LinkedList<>();
+		this.pldBudgets = new HashMap<>();
 		
 		// Adding starting queues to the list of queues
 		this.queues.add(this.currentQueue);
-		Queue<Pair<String, Integer>> queue = new LinkedList<Pair<String, Integer>>();
+		Queue<Pair<String, Integer>> queue = new LinkedList<>();
 		this.queues.add(queue);
 		// Adding queues and the mapping of PLD with their 
 		// left-over budget for each queue to the budget map
 		this.pldBudgets.put(this.currentQueue, new HashMap<String, Integer>());
 		this.pldBudgets.put(queue, new HashMap<String, Integer>());
 		
-		this.listeners = new CopyOnWriteArrayList<BEASTBudgetPassedListener>();
+		this.listeners = new CopyOnWriteArrayList<>();
 		
 		Thread worker = new Thread(new BEASTQueueReader());
 		worker.setName("BEAST Queue Reader");
@@ -82,11 +94,14 @@ public class BEAST
 	}
 	
 	/**
-	 * <p>Adds a new listener to BEAST, which implementing class needs to be 
+	 * <p>
+	 * Adds a new listener to BEAST, which implementing class needs to be
 	 * informed if a URL passed the budget test. If the listener is already
-	 * registered with BEAST, the invocation will be ignored.</p>
+	 * registered with BEAST, the invocation will be ignored.
+	 * </p>
 	 * 
-	 * @param listener The listener which need to be informed of passing URLs
+	 * @param listener
+	 *            The listener which need to be informed of passing URLs
 	 */
 	public void addBEASTBudgetPassedListener(BEASTBudgetPassedListener listener)
 	{
@@ -95,12 +110,14 @@ public class BEAST
 	}
 	
 	/**
-	 * <p>Removes a currently registered instance that implements the 
-	 * {@link BEASTBudgetPassedListener}. If the listener was not registered before
-	 * the invocation will be ignored.</p>
+	 * <p>
+	 * Removes a currently registered instance that implements the
+	 * {@link BEASTBudgetPassedListener}. If the listener was not registered
+	 * before the invocation will be ignored.</p>
 	 * 
-	 * @param listener The listener-instance which needs to be removed of the set
-	 *                 of registered listeners.
+	 * @param listener
+	 *            The listener-instance which needs to be removed of the set of
+	 *            registered listeners.
 	 */
 	public void removeBEASTBudgetPassedListener(BEASTBudgetPassedListener listener)
 	{
@@ -109,17 +126,24 @@ public class BEAST
 	}
 	
 	/**
-	 * <p>Arranges URLs into specific queues based on the provided
-	 * budget and the number of URLs from the same pay level domain
-	 * within the queues.</p>
-	 * <p>This implementation will take the first available queue 
-	 * whose budget for the provided pay level domain is not depleted.</p>
-	 * <p>If all of the queues are already depleted with URLs of
-	 * the same pay level domain, the URL itself is added to a further
-	 * queue, the fail-over queue, at the end of the list.</p>
+	 * <p>
+	 * Arranges URLs into specific queues based on the provided budget and the
+	 * number of URLs from the same pay level domain within the queues.
+	 * </p>
+	 * <p>
+	 * This implementation will take the first available queue whose budget for
+	 * the provided pay level domain is not depleted.
+	 * </p>
+	 * <p>
+	 * If all of the queues are already depleted with URLs of the same pay
+	 * level domain, the URL itself is added to a further queue, the fail-over
+	 * queue, at the end of the list.
+	 * </p>
 	 * 
-	 * @param url The URL to check its budget for
-	 * @param budget The current budget for this URL
+	 * @param url
+	 *            The URL to check its budget for
+	 * @param budget
+	 *            The current budget for this URL
 	 */
 	public void checkBudgetOfURL(String url, int budget)
 	{
@@ -130,7 +154,7 @@ public class BEAST
 		// URL is f.e. 10 - every queue has a limit of 10 URLs
 		boolean found = false;
 		
-		synchronized(this.currentQueue)
+		synchronized(this.syncObj)
 		{
 			for (int i=0; i < this.queues.size(); i++)
 			{
@@ -143,26 +167,28 @@ public class BEAST
 				if (j != this.currentQueueNumber)
 				{
 					Integer queueBudget = 0;
-					Map<String, Integer> pldDataInQueue = this.pldBudgets.get(this.queues.get(j));
+					Map<String, Integer> pldDataInQueue =
+							this.pldBudgets.get(this.queues.get(j));
 					if (pldDataInQueue != null)
 						queueBudget = pldDataInQueue.get(PLD);
 					if (queueBudget == null)
 						queueBudget = 0;
-//					logger.debug("current queue id: {} | j: {} | budget: {} | queueBudget: {}", 
-//							this.currentQueueNumber, j, budget, queueBudget);
+					LOG.debug("current queue id: {} | j: {} | budget: {} | queueBudget: {}",
+							this.currentQueueNumber, j, budget, queueBudget);
 					if (queueBudget < budget)
 					{
-						this.queues.get(j).add(new Pair<String, Integer>(url, budget));
+						this.queues.get(j).add(new Pair<>(url, budget));
 						if (this.pldBudgets.get(this.queues.get(j)) == null)
 						{
-							Map<String, Integer> data = new HashMap<String, Integer>();
+							Map<String, Integer> data = new HashMap<>();
 							data.put(PLD, queueBudget++);
 							this.pldBudgets.put(this.queues.get(j), data);
 						}
 						else
 							this.pldBudgets.get(this.queues.get(j)).put(PLD, queueBudget++);
 						found = true;
-						logger.debug("Adding {} to queue {} which had available {} slot(s)", url, j, (budget-queueBudget));
+						LOG.debug("Adding {} to queue {} which had available {} slot(s)",
+								url, j, (budget-queueBudget));
 						break;
 					}
 				}
@@ -171,8 +197,8 @@ public class BEAST
 			// this PLD are sent to the leftOverQueue
 			if (!found)
 			{
-				this.leftOverQueue.add(new Pair<String, Integer>(url, budget));
-				logger.debug("No queue found for url {} - using fail-over queue", url);
+				this.leftOverQueue.add(new Pair<>(url, budget));
+				LOG.debug("No queue found for url {} - using fail-over queue", url);
 			}
 		}
 		
@@ -180,13 +206,17 @@ public class BEAST
 	}
 	
 	/**
-	 * <p>Reads the current queue and informs listeners of URLs that passed
-	 * the budget check.</p>
-	 * <p>This method is invoked repeatedly by a worker thread.</p>
+	 * <p>
+	 * Reads the current queue and informs listeners of URLs that passed the
+	 * budget check.
+	 * </p>
+	 * <p>
+	 * This method is invoked repeatedly by a worker thread.
+	 * </p>
 	 */
 	private void readCurrentQueue()
 	{
-		synchronized (this.currentQueue)
+		synchronized (this.syncObj)
 		{
 			for (Pair<String, Integer> data : this.currentQueue)
 			{
@@ -205,9 +235,12 @@ public class BEAST
 	}
 	
 	/**
-	 * <p>Sets the next queue in line to read from. If it reaches the end of the list
-	 * it sets the pointer to the start of the list. Moreover if the last element of
-	 * the list was reached, it invokes splitting the left-over queue.</p>
+	 * <p>
+	 * Sets the next queue in line to read from. If it reaches the end of the
+	 * list it sets the pointer to the start of the list. Moreover if the last
+	 * element of the list was reached, it invokes splitting the left-over
+	 * queue.
+	 * </p>
 	 */
 	private void readNextQueue()
 	{
@@ -220,7 +253,7 @@ public class BEAST
 			// double the size of queues
 			for (int i=0; i<currentSize; i++)
 			{
-				Queue<Pair<String, Integer>> queue = new LinkedList<Pair<String,Integer>>();
+				Queue<Pair<String, Integer>> queue = new LinkedList<>();
 				this.queues.add(queue);
 				this.pldBudgets.put(queue, new HashMap<String, Integer>());
 			}
@@ -237,16 +270,20 @@ public class BEAST
 	}
 	
 	/**
-	 * <p>Splits the left-over queue into n separate new queues which are added
+	 * <p>
+	 * Splits the left-over queue into n separate new queues which are added
 	 * to the list of queues. n represents the current size of queues in the
-	 * list of queues excluding the left-over queue.</p>
-	 * <p>Data contained inside the left-over queue is distributed according the
-	 * budget values of the URLs among the newly created queues.</p>
+	 * list of queues excluding the left-over queue.
+	 * </p>
+	 * <p>
+	 * Data contained inside the left-over queue is distributed according the
+	 * budget values of the URLs among the newly created queues.
+	 * </p>
 	 */
 	private void splitLeftOverQueue()
 	{
-		logger.debug("Splitting left-over queue");
-		Queue<Pair<String, Integer>> tmpLeftOverQueue = new LinkedList<Pair<String, Integer>>();
+		LOG.debug("Splitting left-over queue");
+		Queue<Pair<String, Integer>> tmpLeftOverQueue = new LinkedList<>();
 		for (Pair<String, Integer> data : this.leftOverQueue)
 		{
 			String PLD = IRLbotUtil.getPLDofURL(data.getFirst());
@@ -256,7 +293,8 @@ public class BEAST
 			for (int i=this.queues.size()/2; i<this.queues.size(); i++)
 			{
 				Integer queueBudget = 0;
-				Map<String, Integer> pldDataInQueue = this.pldBudgets.get(this.queues.get(i));
+				Map<String, Integer> pldDataInQueue =
+						this.pldBudgets.get(this.queues.get(i));
 				if (pldDataInQueue != null)
 					queueBudget = pldDataInQueue.get(PLD);
 				if (queueBudget == null)
@@ -266,14 +304,15 @@ public class BEAST
 					this.queues.get(i).add(data);
 					if (this.pldBudgets.get(this.queues.get(i)) == null)
 					{
-						Map<String, Integer> dataMap = new HashMap<String, Integer>();
+						Map<String, Integer> dataMap = new HashMap<>();
 						dataMap.put(PLD, queueBudget++);
 						this.pldBudgets.put(this.queues.get(i), dataMap);
 					}
 					else
 						this.pldBudgets.get(this.queues.get(i)).put(PLD, queueBudget++);
 					found = true;
-					logger.debug("Adding {} to queue {} which had available {} slots", data.getFirst(), i, queueBudget);
+					LOG.debug("Adding {} to queue {} which had available {} slots",
+							data.getFirst(), i, queueBudget);
 					break;
 				}
 			}
@@ -281,23 +320,30 @@ public class BEAST
 			if (!found)
 			{
 				tmpLeftOverQueue.add(data);
-				logger.debug("No queue found for url {} - using fail-over queue", data.getFirst());
+				LOG.debug("No queue found for url {} - using fail-over queue",
+						data.getFirst());
 			}
 		}
 		this.leftOverQueue = tmpLeftOverQueue;
 	}
 	
 	/**
-	 * <p>Indicates the BEAST algorithm to terminate execution</p>
+	 * <p>
+	 * Indicates the BEAST algorithm to terminate execution
+	 * </p>
 	 */
 	public void dispose()
 	{
 		this.stopRequested = true;
 	}
-	
+
+	/**
+	 * <p>
+	 * Helper class which constantly reads the current queue
+	 * </p>
+	 */
 	private class BEASTQueueReader implements Runnable
 	{
-
 		@Override
 		public void run() 
 		{

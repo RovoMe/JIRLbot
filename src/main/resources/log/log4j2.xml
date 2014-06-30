@@ -48,13 +48,13 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 	<logger name="at.rovo.crawler.IRLbot" level="info" additivity="true">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.CrawlingThread" level="error" additivity="false">
+	<logger name="at.rovo.crawler.CrawlingThread" level="info" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
 	<logger name="at.rovo.crawler.UniqueUrlDispatcher" level="error" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.STAR" level="error" additivity="false">
+	<logger name="at.rovo.crawler.STAR" level="info" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
 	<logger name="at.rovo.crawler.BEAST" level="error" additivity="false">

@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 public class IRLbotUtil
 {
 	/** The logger of this class **/
-	private final static Logger logger = LogManager.getLogger(IRLbotUtil.class);
+	private final static Logger LOG = LogManager.getLogger(IRLbotUtil.class);
 
 	/**
 	 * <p>
@@ -23,13 +23,13 @@ public class IRLbotUtil
 		String origin = url;
 		try
 		{
-			logger.debug("Extracting PLD of {}", url);
+			LOG.debug("Extracting PLD of {}", url);
 			// remove leading 'http://' or 'https://'
 			if (url.contains("://"))
 				url = url.substring(url.indexOf("://") + 3);
 			// remove everything after the first '/' which indicates the first
 			// sub-directory
-			if (url.indexOf("/") != -1)
+			if (url.contains("/"))
 				url = url.substring(0, url.indexOf("/"));
 			if (url.contains("?"))
 				url = url.substring(0, url.indexOf("?"));
@@ -53,13 +53,13 @@ public class IRLbotUtil
 			// we now only have to look up the part after the last
 			// remained '.' and add the TLD to its end
 			String PLD = rest.substring(rest.lastIndexOf(".") + 1) + TLD;
-			logger.debug("PLD: {}", PLD);
+			LOG.debug("PLD: {}", PLD);
 			return PLD;
 		}
 		catch (IndexOutOfBoundsException e)
 		{
-			logger.error("Error extracting PLD of url: {}", origin);
-			logger.catching(e);
+			LOG.error("Error extracting PLD of url: {}", origin);
+			LOG.catching(e);
 			throw e;
 		}
 	}
@@ -97,9 +97,7 @@ public class IRLbotUtil
 		// get the pay level domain of the URL
 		String PLD = IRLbotUtil.getPLDofURL(url);
 		// find the pay level domain in the URL and set the cursor
-		// behind the end of the URL and return the rest of the URL
-		String path = url.substring(url.indexOf(PLD) + PLD.length());
-		return path;
+		return url.substring(url.indexOf(PLD) + PLD.length());
 	}
 
 	/**
@@ -143,13 +141,13 @@ public class IRLbotUtil
 				parent = parentURL;
 			if (parent.endsWith("/"))
 			{
-				logger.debug("url starts with '/': {} | {} | {}", 
+				LOG.debug("url starts with '/': {} | {} | {}",
 						parentURL, parent, url.substring(1));
 				return parent + url.substring(1);
 			}
 			else
 			{
-				logger.debug("url starts with '/': {} | {} | {}", 
+				LOG.debug("url starts with '/': {} | {} | {}",
 						parentURL, parent, url);
 				return parent + url;
 			}
@@ -177,7 +175,7 @@ public class IRLbotUtil
 					// && numOfDirsUp == 1)
 				parent = parentURL;
 
-			String ret = "";
+			String ret;
 			if (!parent.endsWith("/") && !tmp.startsWith("/"))
 				ret = parent + "/" + tmp;
 			else if (parent.endsWith("/") && tmp.startsWith("/"))
@@ -185,7 +183,7 @@ public class IRLbotUtil
 			else
 				ret = parent + tmp;
 
-			logger.debug("url starts with '..': {} | {} | {} | {} | {}", 
+			LOG.debug("url starts with '..': {} | {} | {} | {} | {}",
 					parentURL, parent, url, tmp, ret);
 
 			return ret;
@@ -200,19 +198,19 @@ public class IRLbotUtil
 
 			if (parent.endsWith("/") && url.startsWith("/"))
 			{
-				logger.debug("url starts not with 'http://': {} | {} | {}", 
+				LOG.debug("url starts not with 'http://': {} | {} | {}",
 						parentURL, parent, url);
 				return parent + url.substring(1);
 			}
 			else if (!parentURL.endsWith("/") && !url.startsWith("/"))
 			{
-				logger.debug("url starts not with 'http://': {} | {} | {}", 
+				LOG.debug("url starts not with 'http://': {} | {} | {}",
 						parentURL, parent, url);
 				return parent + "/" + url;
 			}
 			else
 			{
-				logger.debug("url starts not with 'http://': {} | {} | {}", 
+				LOG.debug("url starts not with 'http://': {} | {} | {}",
 						parentURL, parent, url);
 				return parent + url;
 			}
@@ -221,7 +219,7 @@ public class IRLbotUtil
 		else
 		// if (url.startsWith("http://") || url.startsWith("https://"))
 		{
-			logger.debug("found url: {}", url);
+			LOG.debug("found url: {}", url);
 			return url;
 		}
 	}

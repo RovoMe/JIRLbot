@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import at.rovo.crawler.util.IRLbotUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import at.rovo.caching.drum.Drum;
@@ -41,10 +43,11 @@ import at.rovo.crawler.util.PLDComparator;
  * 
  * @author Roman Vottner
  */
-public class STAR extends NullDispatcher<PLDData, StringSerializer>
+@SuppressWarnings("unused")
+public final class STAR extends NullDispatcher<PLDData, StringSerializer>
 {
 	/** The logger of this class **/
-	private final static Logger logger = LogManager.getLogger(STAR.class);
+	private final static Logger LOG = LogManager.getLogger(STAR.class);
 
 	/** The DRUM object managing the update and unique/duplicate checking **/
 	private IDrum<PLDData, StringSerializer> drum = null;
@@ -54,7 +57,8 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	private int numBuckets = 0;
 	/** The comparator used to sort PLDs based on their in-degree value **/
 	private PLDComparator<PLDData> comparator = new PLDComparator<>();
-	/** Contains the top N PLDs according their in-degree value **/
+	/** Contains the top N PLDs according their in-degree value in a sorted order
+	 * depending on the ordering returned by the {@link PLDComparator} **/
 	private ConcurrentSkipListSet<PLDData> topSet = new ConcurrentSkipListSet<>(
 			this.comparator);
 	/**
@@ -62,8 +66,8 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 * determine if the order has changed and to update the elements that have
 	 * changed
 	 **/
-	private ConcurrentSkipListSet<PLDData> compareSet = new ConcurrentSkipListSet<>(
-			this.comparator);
+	private ConcurrentSkipListSet<PLDData> compareSet =
+			new ConcurrentSkipListSet<>(this.comparator);
 	/** The maximum budget assigned to a PLD **/
 	private int maxBudget = 10000;
 	/** The minimum budget assigned to a PLD **/
@@ -294,23 +298,77 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 * <p>
 	 * Checks if a certain URL passes the budget check.
 	 * </p>
+	 * <p>
+	 * This method will check if an entry of the URLs pay level domain exists
+	 * already in the local in memory cache and redirects the request to the
+	 * backing DRUM cache if not. In case the entry was found within DRUM
+	 * {@link #duplicateKeyCheck(Long, PLDData, StringSerializer)} will be
+	 * invoked by the backing DRUM cache.
+	 * </p>
 	 * 
-	 * @param aux
+	 * @param url
+	 *            The auxiliary data object representing the URL to check
+	 *
+	 * @see {@link #duplicateKeyCheck(Long, PLDData, StringSerializer)}
 	 */
-	public void check(String aux)
+	public void check(String url)
 	{
-		long key = DrumUtil.hash(aux);
+		String pld = IRLbotUtil.getPLDofURL(url);
+		long key = DrumUtil.hash(pld);
 		PLDData data = new PLDData();
 		data.setHash(key);
-		// check if the URL is present in the topN set
-		if (this.containsData(data))
+		data.setPLD(pld);
+		// check if the URL is present in the topN set. If it is not, we first
+		// redirect the request to DRUM. It will then respond with either a
+		// unique or duplicate check key response. But as we are only
+		// interested in entries contained within DRUM
+		PLDData pldData = this.getData(data);
+		if (null != pldData)
 		{
-			data = this.getData(data);
+			// as the data is already locally available we don't need to send
+			// a check request to the backing drum instance
+			LOG.debug("In memory cached data found for {}/{}/{} - budget is {}",
+					key, pld, url, pldData.getBudget());
 			for (CheckSpamUrlListener listener : this.listeners)
-				listener.handleSpamCheck(aux, data.getBudget());
+				listener.handleSpamCheck(url, pldData.getBudget());
 		}
 		else
-			this.drum.check(key, new StringSerializer(aux));
+		{
+			// after invoking check() on the backing DRUM instance, if there
+			// was already a PLD entry for this URL the duplicateKeyCheck
+			// method will be invoked by the dispatcher
+			LOG.debug("Checking {}/{}/{} against backing DRUM cache",
+					key, pld, url);
+			this.drum.check(key, new StringSerializer(url));
+		}
+	}
+
+	/**
+	 * <p>
+	 * Returns the PLDData element from the topSet if it includes an element
+	 * with the same hash number. Otherwise null is returned.
+	 * </p>
+	 * <p>
+	 * Note that this method is necessary as topSet.ceiling(data) object returns
+	 * the first element instead of the object at the position that equals (=
+	 * same hash) the provided one.
+	 * </p>
+	 *
+	 * @param data
+	 *        A PLDData object whose correspondent object should be looked up in
+	 *        the topSet.
+	 * @return The PLDData object in the topSet which shares the same hash key
+	 *         as the PLDData object provided
+	 */
+	private PLDData getData(PLDData data)
+	{
+		LOG.debug("Size of topSet: {}", topSet.size());
+		for (PLDData obj : this.topSet)
+		{
+			if (obj.getHash() == data.getHash())
+				return obj;
+		}
+		return null;
 	}
 	
 	/**
@@ -326,14 +384,47 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 */
 	private boolean containsData(PLDData data)
 	{
-		Iterator<PLDData> iterator = this.topSet.iterator();
-		while (iterator.hasNext())
+		return getData(data) != null;
+	}
+
+	/**
+	 * <p>
+	 * Callback method which is invoked by the backing DRUM instance. This
+	 * method should not be called by the user.
+	 * </p>
+	 * <p>
+	 * If the backing <em>DRUM</em> cache already contained PLD data for
+	 * the given pay level domain, this method will be invoked.
+	 * </p>
+	 *
+	 * @param key
+	 *            The hash value of the pay level domain available within the
+	 *            DRUM cache
+	 * @param data
+	 *            The encapsulated data for the given pay level domain. This
+	 *            includes f.e. the current budget as well as all the neighbors
+	 *            pointing to this domain
+	 * @param url
+	 *            The actual URL the check was executed for
+	 */
+	@Override
+	public void duplicateKeyCheck(Long key, PLDData data, StringSerializer url)
+	{
+		LOG.debug("Backing DRUM already contained data for PLD {}/{} - budget is {}",
+				key, url.getData(), data.getBudget());
+		for (CheckSpamUrlListener listener : this.listeners)
 		{
-			PLDData obj = iterator.next();
-			if (obj.getHash() == data.getHash())
-				return true;
+			listener.handleSpamCheck(url.getData(), data.getBudget());
 		}
-		return false;
+
+		if (LOG.isDebugEnabled())
+			this.printTop(this.topN);
+	}
+
+	@Override
+	public void uniqueKeyCheck(Long key, StringSerializer pld)
+	{
+		LOG.warn("PLD {}/{} not found within backing DRUM!", key, pld.getData());
 	}
 
 	/**
@@ -342,10 +433,14 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 * to every PLD contained in <code>plds</code>.
 	 * </p>
 	 * <p>
-	 * This method append-updates neighbor information using DRUM and builds the
-	 * topN set of PLDs which have the highest number of in-degree links.
+	 * This method append-updates neighbor information using DRUM and builds
+	 * the topN set of PLDs which have the highest number of in-degree links.
 	 * Furthermore this method keeps track of PLDs dropping from the topN set
 	 * which get check+updated with the new minimal budget.
+	 * </p>
+	 * <p>
+	 * <b>Note</b> that this method is usually called by the crawling threads
+	 * to update the PLD-PLD graph.
 	 * </p>
 	 * 
 	 * @param origin
@@ -356,25 +451,106 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	public void update(String origin, Set<String> plds)
 	{
 		// crawling threads aggregate PLD-PLD link information and send it to a
-		// DRUM structure
-		// PLDindegree, which uses a batch update to store for each PLD x its
-		// hash hx, in-degree
-		// dx, current budget Bx, and hashes of all in-degree neighbors in the
-		// PLD graph.
-
+		// DRUM structure. PLDindegree uses a batch update to store for each
+		// PLD x its hash hx, in-degree dx, current budget Bx, and hashes of
+		// all in-degree neighbors in the PLD graph. This data is encapsulated
+		// within a PLDData object.
 		for (String pld : plds)
 		{
-			logger.debug("Updating PLD link information: {}<--{} ({}<--{})", 
+			LOG.debug("Updating PLD link information: {}<--{} ({}<--{})",
 					pld, origin, DrumUtil.hash(pld), DrumUtil.hash(origin));
 			PLDData data = new PLDData();
 			data.setPLD(pld);
 			data.setHash(DrumUtil.hash(pld));
+			// Neighbors are kept in a sortable list where neighbors with a
+			// lower hash value of their PLD are ranked first.
 			Set<Long> neighbor = new ConcurrentSkipListSet<>();
 			neighbor.add(DrumUtil.hash(origin));
 			data.setIndegreeNeighbors(neighbor);
-			data.setBudget(10);
+			// by default every PLD has a budget of 10. If the domain is linked
+			// more often the budget will increase
+			data.setBudget(this.minBudget);
 			this.drum.appendUpdate(DrumUtil.hash(pld), data, new StringSerializer(pld));
 		}
+	}
+
+	/**
+	 * <p>
+	 * Callback method which is invoked by the backing DRUM instance if in a
+	 * previous step a change of the PLD data was noticed. DRUM will return
+	 * therefore the most recent state of the attached data for the given PLD.
+	 * This method should not be called by the user directly.
+	 * </p>
+	 *
+	 * @param key
+	 *            The hash value of the updated pay level domain
+	 * @param data
+	 *            The encapsulated data for the given pay level domain. This
+	 *            includes f.e. the current budget as well as all the neighbors
+	 *            pointing to this domain
+	 * @param pld
+	 *            The actual pay level domain the update was executed for
+	 */
+	@Override
+	public void update(Long key, PLDData data, StringSerializer pld)
+	{
+		if (null == pld)
+		{
+			throw new IllegalArgumentException("PLD was null! It seems no auxiliary PLD data was provided upon calling DRUMs update operation");
+		}
+		LOG.debug("Receiving update for PLD {}/{}", key, pld.getData());
+		data.setPLD(pld.getData());
+
+		// as adding an already stored element in the top set leaves the set
+		// unchanged and ConcurrentSkipListSet lacks a method to replace an
+		// entry we need to retrieve the element first and append the data to
+		// the entry
+		PLDData tmp = this.getData(data);
+		if (null != tmp)
+		{
+			// as updating a PLDData object does not change the position of the
+			// object in the data structure, which is internally sorted, we 
+			// remove the object and add it again
+			LOG.debug("PLD before the appending: {}", tmp);
+			this.topSet.remove(tmp);
+			tmp.append(data);
+			LOG.debug("PLD after the merge: {}", tmp);
+			this.topSet.add(tmp);
+		}
+		else
+		{
+			LOG.debug("Adding {} to the in memory cache", data);
+			this.topSet.add(data);
+		}
+
+		// Only the top N PLD entries are kept in memory as they get assigned a
+		// budget between max- and minBudget uniformly. If a PLD drops from the
+		// topSet it automatically gets assigned a budget of minBudget
+		if (this.topSet.size() > this.topN)
+		{
+			for (int i = this.topSet.size(); i > this.topN; i--)
+			{
+				PLDData remData = this.topSet.last();
+				LOG.debug("Removing {} from the top-set - was the {}. element",
+						remData, i);
+				this.topSet.remove(remData);
+				// update the budget of the PLD which drops from the top set if
+				// it had a budget from more than the minimum budget. If a PLD
+				// is not within the top set, it automatically has minimum
+				// budget available
+				if (remData.getBudget() > this.minBudget)
+				{
+					remData.setBudget(this.minBudget);
+					this.drum.update(remData.getHash(), remData, new StringSerializer(remData.getPLD()));
+				}
+			}
+		}
+
+		// check if the order of the topSet has changed
+		this.checkOrderHasChanged();
+
+		// create a copy for the next iteration
+		this.compareSet = new ConcurrentSkipListSet<>(this.topSet);
 	}
 
 	/**
@@ -403,24 +579,28 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		{
 			PLDData top = topIter.next();
 			PLDData comp = compIter.next();
-
+			// compare the n-th item of the top-set with the n-th item of the
+			// comparison set. If the items are not identical or if the budget
+			// of the PLD in the top-set is greater than the current budget, we
+			// need to recalculate the budget
 			if (top.getHash() != comp.getHash() || top.getBudget() > curBudget)
 			{
-				logger.trace("Recalculating Budget for {} with a budget of {} - previous set contained {} with a budget of {}", 
-						top.getHash(), top.getBudget(), comp.getHash(), curBudget);
 				top.setBudget(this.calculateBudget(top.getIndegree()));
 				curBudget = top.getBudget();
-				this.drum.checkUpdate(top.getHash(), top);
+				LOG.debug("Recalculated Budget for PLD {}/{} with a budget of {} - previous set contained {}/{} at this position - current budget {}",
+						top.getHash(), top.getPLD(), top.getBudget(),
+						comp.getHash(), comp.getPLD(), curBudget);
+				this.drum.update(top.getHash(), top, new StringSerializer(top.getPLD()));
 			}
 		}
 		// check if the topSet has expanded in comparison to the last call
 		while (topIter.hasNext())
 		{
 			PLDData top = topIter.next();
-			logger.trace("Recalculating Budget for {} with a budget of {} - current budget {}", 
-					top.getHash(), top.getBudget(), curBudget);
 			top.setBudget(this.calculateBudget(top.getIndegree()));
-			this.drum.checkUpdate(top.getHash(), top);
+			LOG.debug("Recalculated Budget for PLD {}/{} with a budget of {} - current budget {}",
+					top.getHash(), top.getPLD(), top.getBudget(), curBudget);
+			this.drum.update(top.getHash(), top, new StringSerializer(top.getPLD()));
 		}
 		// should not happen as the list should not get less than 25 - just in
 		// case is might happen for some reason set the budget of those PLDs
@@ -428,115 +608,21 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 		while (compIter.hasNext())
 		{
 			PLDData comp = compIter.next();
-			logger.trace("Recalculating Budget for {} with a budget of {}", 
-					comp.getHash(), 10);
-			comp.setBudget(10);
-			this.drum.checkUpdate(comp.getHash(), comp);
+			comp.setBudget(this.minBudget);
+			LOG.warn("Setting Budget for PLD {}/{} to the minimum budget of {}",
+					comp.getHash(), comp.getPLD(), this.minBudget);
+			this.drum.update(comp.getHash(), comp, new StringSerializer(comp.getPLD()));
 		}
 
-		if (logger.isDebugEnabled())
+		if (LOG.isTraceEnabled())
 		{
-			logger.debug("New Budgets assigned: ");
+			LOG.trace("New Budgets assigned: ");
 			this.printTop(this.topN);
 		}
-	}
-
-	/**
-	 * <p>
-	 * Callback method for the {@link DrumDispatcher}. This method should not be
-	 * called by the user.
-	 * </p>
-	 */
-	@Override
-	public void update(Long key, PLDData data, StringSerializer aux)
-	{
-		data.setPLD(aux.getData());
-
-		// as adding an already stored element in the top set leaves the set
-		// unchanged and ConcurrentSkipListSet lacks a method to replace an
-		// entry
-		// we need to retrieve the element first and append the data to the
-		// entry
-		if (this.containsData(data))
-		{
-			// as updating a PLDData object does not change the position of the
-			// object in the data structure, which is internally sorted, we 
-			// remove the object and add it again
-			PLDData tmp = this.getData(data);
-			this.topSet.remove(tmp);
-			tmp.append(data);
-			this.topSet.add(tmp);
-		}
 		else
-			this.topSet.add(data);
-
-		// Only the top N PLD entries are kept in memory as they get assigned a
-		// budget between max- and minBudget uniformly. If a PLD drops from the
-		// topSet it automatically gets assigned a budget of minBudget
-		if (this.topSet.size() > this.topN)
 		{
-			for (int i = this.topSet.size(); i > this.topN; i--)
-			{
-				PLDData remData = this.topSet.last();
-				this.topSet.remove(remData);
-
-				if (remData.getBudget() > this.minBudget)
-				{
-					remData.setBudget(this.minBudget);
-					this.drum.checkUpdate(remData.getHash(), remData);
-				}
-			}
+			LOG.debug("CheckOrderHasChanged processed");
 		}
-
-		// check if the order of the topSet has changed
-		this.checkOrderHasChanged();
-
-		// create a copy for the next iteration
-		this.compareSet = new ConcurrentSkipListSet<>(this.topSet);
-	}
-	
-	/**
-	 * <p>
-	 * Returns the PLDData element from the topSet if it includes an element
-	 * with the same hash number. Otherwise null is returned.
-	 * </p>
-	 * <p>
-	 * Note that this method is necessary as topSet.ceiling(data) object returns
-	 * the first element instead of the object at the position that equals (= 
-	 * same hash) the provided one.
-	 * </p>
-	 * 
-	 * @param data
-	 *        A PLDData object whose correspondent object should be looked up in
-	 *        the topSet.
-	 * @return The PLDData object in the topSet which shares the same hash key
-	 *         as the PLDData object provided
-	 */
-	private PLDData getData(PLDData data)
-	{
-		Iterator<PLDData> iterator = this.topSet.iterator();
-		while (iterator.hasNext())
-		{
-			PLDData obj = iterator.next();
-			if (obj.getHash() == data.getHash())
-				return obj;
-		}
-		return null;
-	}
-
-	/**
-	 * <p>
-	 * Callback method for the {@link DrumDispatcher}. This method should not be
-	 * called by the user.
-	 * </p>
-	 */
-	@Override
-	public void duplicateKeyCheck(Long key, PLDData value, StringSerializer aux)
-	{
-		for (CheckSpamUrlListener listener : this.listeners)
-			listener.handleSpamCheck(aux.getData(), value.getBudget());
-
-		this.printTop(this.topN);
 	}
 
 	/**
@@ -546,7 +632,7 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 * on the position of the entry in the topN set. If the last entry in the
 	 * topN set has a higher in-degree value than the provided argument the
 	 * minimum budget will be returned.
-	 * 
+	 *
 	 * @param indegree
 	 *            The in-degree number of a PLD
 	 * @return The calculated budget which is a value between the maximum and
@@ -570,7 +656,9 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 			budget = this.maxBudget - i++;
 			PLDData data = iter.next();
 			if (data.getIndegree() <= indegree)
+			{
 				return budget;
+			}
 		}
 		return this.minBudget;
 	}
@@ -587,7 +675,7 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	public void dispose() throws DrumException
 	{
 		this.checkOrderHasChanged();
-		if (logger.isDebugEnabled())
+		if (LOG.isDebugEnabled())
 			this.printTop(100);
 
 		this.drum.dispose();
@@ -609,11 +697,11 @@ public class STAR extends NullDispatcher<PLDData, StringSerializer>
 	{
 		Iterator<PLDData> iter = this.topSet.iterator();
 		int i = 0;
-		logger.debug("Top {} list", numEntries);
+		LOG.debug("Top {} list", numEntries);
 		while (iter.hasNext() && i < numEntries)
 		{
 			PLDData data = iter.next();
-			logger.debug("{} - PLD: {} hash: {} in-degree: {} budget: {}", 
+			LOG.debug("{} - PLD: {} hash: {} in-degree: {} budget: {}",
 					(i + 1), data.getPLD(), data.getHash(), data.getIndegree(), 
 					data.getBudget());
 			i++;

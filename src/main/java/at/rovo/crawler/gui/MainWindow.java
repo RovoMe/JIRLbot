@@ -18,14 +18,6 @@ public class MainWindow extends JFrame implements ActionListener, WindowListener
 	 * 
 	 */
 	private static final long serialVersionUID = -5030363401745630286L;
-
-	// menu and entries
-	private JMenuBar menuBar = new JMenuBar();
-	private JMenu menuFile = new JMenu("File");
-	private JMenuItem menuFileStart = new JMenuItem("Start");
-	private JMenuItem menuFileClose = new JMenuItem("Close");
-	private JMenu menuHelp = new JMenu("Help");
-	private JMenuItem menuHelpAbout = new JMenuItem("About ...");
 	
 	// content area
 	private JTabbedPane tabbedPane = new JTabbedPane();
@@ -35,27 +27,35 @@ public class MainWindow extends JFrame implements ActionListener, WindowListener
 		Thread.currentThread().setName("main");
 		
 		Manager.getInstance().registerForIRLbotCreationEvents(this);
-				
+
+		JMenuBar menuBar = new JMenuBar();
+
+		JMenu menuFile = new JMenu("File");
+		JMenuItem menuFileStart = new JMenuItem("Start");
+		JMenuItem menuFileClose = new JMenuItem("Close");
+		JMenu menuHelp = new JMenu("Help");
+		JMenuItem menuHelpAbout = new JMenuItem("About ...");
+
 		// set Mnemonics
-		this.menuFile.setMnemonic('F');
-		this.menuHelp.setMnemonic('H');
-		this.menuFileStart.setMnemonic('S');
-		this.menuFileClose.setMnemonic('C');
-		this.menuHelpAbout.setMnemonic('A');
+		menuFile.setMnemonic('F');
+		menuHelp.setMnemonic('H');
+		menuFileStart.setMnemonic('S');
+		menuFileClose.setMnemonic('C');
+		menuHelpAbout.setMnemonic('A');
 		
 		// add action listeners to the menu items
-		this.menuFileStart.addActionListener(this);
-		this.menuFileClose.addActionListener(this);
-		this.menuHelpAbout.addActionListener(this);
+		menuFileStart.addActionListener(this);
+		menuFileClose.addActionListener(this);
+		menuHelpAbout.addActionListener(this);
 		
 		// set the menu bar and its entries
-		this.menuFile.add(this.menuFileStart);
-		this.menuFile.addSeparator();
-		this.menuFile.add(this.menuFileClose);
-		this.menuHelp.add(this.menuHelpAbout);
-		this.menuBar.add(this.menuFile);
-		this.menuBar.add(this.menuHelp);
-		this.setJMenuBar(this.menuBar);
+		menuFile.add(menuFileStart);
+		menuFile.addSeparator();
+		menuFile.add(menuFileClose);
+		menuHelp.add(menuHelpAbout);
+		menuBar.add(menuFile);
+		menuBar.add(menuHelp);
+		this.setJMenuBar(menuBar);
 		
 		// add tabs to the main pane
 		this.tabbedPane.addTab("Configuration", new ConfigurationTab());
@@ -90,10 +90,6 @@ public class MainWindow extends JFrame implements ActionListener, WindowListener
 		{
 			this.setVisible(false);
 			System.exit(0);
-		}
-		else if ("Start".equals(command))
-		{
-			
 		}
 	}
 
