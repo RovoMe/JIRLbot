@@ -3,6 +3,16 @@ package at.rovo.crawler.util;
 import java.util.Comparator;
 import at.rovo.crawler.bean.PLDData;
 
+/**
+ * <p>
+ * Compares two {@link PLDData} instances by their budget and ranks the object
+ * with the greater budget before the object with less budget. This will sort
+ * the {@link PLDData} objects in reverse order by their budget listing the
+ * object with the largest budget before objects with less budget.
+ * </p>
+ *
+ * @param <T> The type of the data to compare
+ */
 public class PLDComparator<T extends PLDData> implements Comparator<T>
 {
 	@Override

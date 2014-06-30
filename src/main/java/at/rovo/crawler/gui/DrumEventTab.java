@@ -19,6 +19,7 @@ import at.rovo.caching.drum.event.InMemoryBufferEvent;
 import at.rovo.caching.drum.event.InMemoryBufferStateUpdate;
 import at.rovo.caching.drum.event.MergerStateUpdate;
 
+@SuppressWarnings("unused")
 public class DrumEventTab extends JPanel
 {
 	/**
@@ -85,12 +86,12 @@ public class DrumEventTab extends JPanel
 		innerBorder.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.setColumns(20);
-		gridLayout.setRows((int)memoryBuffer.length/20);
+		gridLayout.setRows(memoryBuffer.length/20);
 		innerBorder.setLayout(gridLayout);
 		
-		for (int i=0; i<memoryBuffer.length; i++)
+		for (JButton button : memoryBuffer)
 		{
-			innerBorder.add(memoryBuffer[i]);
+			innerBorder.add(button);
 		}
 		
 		infoSection.add(innerBorder, BorderLayout.CENTER);
@@ -144,12 +145,12 @@ public class DrumEventTab extends JPanel
 		innerBorder.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.setColumns(20);
-		gridLayout.setRows((int)memoryBuffer.length/20);
+		gridLayout.setRows(memoryBuffer.length/20);
 		innerBorder.setLayout(gridLayout);
 		
-		for (int i=0; i<bucketFile.length; i++)
+		for (JButton bucket : bucketFile)
 		{
-			innerBorder.add(bucketFile[i]);
+			innerBorder.add(bucket);
 		}
 		
 		infoSection.add(innerBorder, BorderLayout.CENTER);

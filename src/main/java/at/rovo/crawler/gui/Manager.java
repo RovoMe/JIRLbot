@@ -34,7 +34,9 @@ public class Manager implements IRLbotListener
 	public static Manager getInstance()
 	{
 		if (INSTANCE == null)
+		{
 			INSTANCE = new Manager();
+		}
 		return INSTANCE;
 	}
 	
@@ -42,7 +44,7 @@ public class Manager implements IRLbotListener
 	{
 		return this.crawler;
 	}
-	
+
 	public Thread createCrawler(String[] urls, int numCrawler, int numRobotDownloader, 
 			int urlSeenBuckets, int urlSeenByteSize, int pldBuckets, int pldByteSize, 
 			int robotsCacheBuckets, int robotsCacheByteSize, 

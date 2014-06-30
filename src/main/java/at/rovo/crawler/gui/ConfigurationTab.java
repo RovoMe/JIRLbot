@@ -1,7 +1,6 @@
 package at.rovo.crawler.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -26,12 +25,11 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 		
 	private final JButton btnAddSeedPage = new JButton("add");
 	private final JButton btnClearList = new JButton("clear");
-	private final JButton btnSynchronize = new JButton("synchronize");
 	private final JButton btnStartStopCrawl = new JButton("start");
 	private final JButton btnPauseResumeCrawl = new JButton("pause");
 	
 	private final JList<String> lstSeedPages = new JList<>();
-	private final DefaultListModel<String> listModel = new DefaultListModel<String>();
+	private final DefaultListModel<String> listModel = new DefaultListModel<>();
 	
 	private final JTextField numCrawlingThreads = new JTextField("100", 8);
 	private final JTextField numRobotsDownloaderThreads = new JTextField("10", 8);
@@ -139,8 +137,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 	
 	private JPanel initButtonsSection()
 	{		
-		this.btnSynchronize.addActionListener(this);
-		this.btnSynchronize.setEnabled(false);
 		// create a start/stop button
 		this.btnStartStopCrawl.addActionListener(this);
 		this.btnStartStopCrawl.setEnabled(false);
@@ -167,8 +163,6 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 
 		// create the button-area with a space between the two buttons
 		Box btnBox = Box.createHorizontalBox();
-		btnBox.add(this.btnSynchronize);
-		btnBox.add (Box.createHorizontalStrut (10));
 		btnBox.add(this.btnStartStopCrawl);
 		btnBox.add (Box.createHorizontalStrut (10));
 		btnBox.add(this.btnPauseResumeCrawl);
@@ -229,15 +223,16 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 
 	private void addURL(String seedPage)
 	{
-		if (seedPage != null || "".equals(seedPage))
+		if (seedPage != null && !"".equals(seedPage))
 		{
 			this.listModel.addElement(seedPage);
-		}
-		// activate the clear button as well as the start-button for the crawling
-		if (!this.btnClearList.isEnabled() && this.listModel.getSize() > 0)
-		{
-			this.btnClearList.setEnabled(true);
-			this.btnStartStopCrawl.setEnabled(true);
+
+			// activate the clear button as well as the start-button for the crawling
+			if (!this.btnClearList.isEnabled() && this.listModel.getSize() > 0)
+			{
+				this.btnClearList.setEnabled(true);
+				this.btnStartStopCrawl.setEnabled(true);
+			}
 		}
 		// clear the input text
 		this.txtAddSeedPage.setText("");
@@ -247,113 +242,101 @@ public class ConfigurationTab extends JPanel implements ActionListener, KeyListe
 	public void actionPerformed(ActionEvent e)
 	{
 		String command = e.getActionCommand();
-		if ("add".equals(command))
+		switch (command)
 		{
-			this.addURL(this.txtAddSeedPage.getText());
-		}
-		else if ("clear".equals(command))
-		{
-			this.btnClearList.setEnabled(false);
-			this.btnSynchronize.setEnabled(false);
-			this.btnStartStopCrawl.setEnabled(false);
-			this.btnPauseResumeCrawl.setEnabled(false);
-			this.listModel.clear();
-		}
-		else if ("start".equals(command))
-		{
-			this.btnAddSeedPage.setEnabled(false);
-			this.txtAddSeedPage.setEnabled(false);
-			this.lstSeedPages.setEnabled(false);
-			this.btnClearList.setEnabled(false);
-			this.btnSynchronize.setEnabled(true);
-			this.btnPauseResumeCrawl.setEnabled(true);
-			this.btnStartStopCrawl.setText("stop");
-			
-			this.numCrawlingThreads.setEnabled(false);
-			this.numRobotsDownloaderThreads.setEnabled(false);
-			this.numUrlSeenBuckets.setEnabled(false);
-			this.numUrlSeenByteSize.setEnabled(false);
-			this.numPldIndegreeBuckets.setEnabled(false);
-			this.numPldIndegreeByteSize.setEnabled(false);
-			this.numRobotsCacheBuckets.setEnabled(false);
-			this.numRobotsCacheByteSize.setEnabled(false);
-			this.numRobotsRequestedBuckets.setEnabled(false);
-			this.numRobotsRequestedByteSize.setEnabled(false);
-			
-			String[] urls = new String[this.listModel.size()];
-			for (int i=0; i<this.listModel.getSize(); i++)
-			{
-				urls[i] = this.listModel.get(i);
-			}
-				
-			try
-			{
-				int crawlingThreads = Integer.parseInt(this.numCrawlingThreads.getText());
-				int robotsDownloader = Integer.parseInt(this.numRobotsDownloaderThreads.getText());
-				int urlSeenBuckets = Integer.parseInt(this.numUrlSeenBuckets.getText());
-				int urlSeenByteSize = Integer.parseInt(this.numUrlSeenByteSize.getText());
-				int pldBuckets = Integer.parseInt(this.numPldIndegreeBuckets.getText());
-				int pldByteSize = Integer.parseInt(this.numPldIndegreeByteSize.getText());
-				int robotsCacheBuckets = Integer.parseInt(this.numRobotsCacheBuckets.getText());
-				int robotsCacheByteSize = Integer.parseInt(this.numRobotsCacheByteSize.getText());
-				int robotsRequestedBuckets = Integer.parseInt(this.numRobotsRequestedBuckets.getText());
-				int robotsRequestedByteSize = Integer.parseInt(this.numRobotsRequestedByteSize.getText());
-				
-				Manager.getInstance().createCrawler(urls, crawlingThreads, robotsDownloader, 
-						urlSeenBuckets, urlSeenByteSize, pldBuckets, pldByteSize, 
-						robotsCacheBuckets, robotsCacheByteSize, robotsRequestedBuckets, robotsRequestedByteSize);
-				
-				Manager.getInstance().getIRLbot().crawl();
-			}
-			catch (NumberFormatException nfE)
-			{
-				System.err.println("Error parsing String into an integer!");
-				nfE.printStackTrace();
-			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-		else if ("stop".equals(command))
-		{
-			this.btnAddSeedPage.setEnabled(true);
-			this.txtAddSeedPage.setEnabled(true);
-			this.lstSeedPages.setEnabled(true);
-			if (this.listModel.getSize() > 0)
-				this.btnClearList.setEnabled(true);
-			else
+			case "add":
+				this.addURL(this.txtAddSeedPage.getText());
+				break;
+			case "clear":
 				this.btnClearList.setEnabled(false);
-			this.btnSynchronize.setEnabled(false);
-			this.btnPauseResumeCrawl.setEnabled(false);
-			this.btnStartStopCrawl.setText("start");
-			
-			this.numCrawlingThreads.setEnabled(true);
-			this.numRobotsDownloaderThreads.setEnabled(true);
-			this.numUrlSeenBuckets.setEnabled(true);
-			this.numUrlSeenByteSize.setEnabled(true);
-			this.numPldIndegreeBuckets.setEnabled(true);
-			this.numPldIndegreeByteSize.setEnabled(true);
-			this.numRobotsCacheBuckets.setEnabled(true);
-			this.numRobotsCacheByteSize.setEnabled(true);
-			this.numRobotsRequestedBuckets.setEnabled(true);
-			this.numRobotsRequestedByteSize.setEnabled(true);
-			
-			Manager.getInstance().getIRLbot().stop();
-		}
-		else if ("pause".equals(command))
-		{
-			this.btnPauseResumeCrawl.setText("resume");
-		}
-		else if ("resume".equals(command))
-		{
-			this.btnPauseResumeCrawl.setText("pause");
-		}
-		else if ("synchronize".equals(command))
-		{
-			this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			Manager.getInstance().getIRLbot().synchronize();
-			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				this.btnStartStopCrawl.setEnabled(false);
+				this.btnPauseResumeCrawl.setEnabled(false);
+				this.listModel.clear();
+				break;
+			case "start":
+				this.btnAddSeedPage.setEnabled(false);
+				this.txtAddSeedPage.setEnabled(false);
+				this.lstSeedPages.setEnabled(false);
+				this.btnClearList.setEnabled(false);
+				this.btnPauseResumeCrawl.setEnabled(true);
+				this.btnStartStopCrawl.setText("stop");
+
+				this.numCrawlingThreads.setEnabled(false);
+				this.numRobotsDownloaderThreads.setEnabled(false);
+				this.numUrlSeenBuckets.setEnabled(false);
+				this.numUrlSeenByteSize.setEnabled(false);
+				this.numPldIndegreeBuckets.setEnabled(false);
+				this.numPldIndegreeByteSize.setEnabled(false);
+				this.numRobotsCacheBuckets.setEnabled(false);
+				this.numRobotsCacheByteSize.setEnabled(false);
+				this.numRobotsRequestedBuckets.setEnabled(false);
+				this.numRobotsRequestedByteSize.setEnabled(false);
+
+				String[] urls = new String[this.listModel.size()];
+				for (int i = 0; i < this.listModel.getSize(); i++)
+				{
+					urls[i] = this.listModel.get(i);
+				}
+
+				try
+				{
+					int crawlingThreads = Integer.parseInt(this.numCrawlingThreads.getText());
+					int robotsDownloader = Integer.parseInt(this.numRobotsDownloaderThreads.getText());
+					int urlSeenBuckets = Integer.parseInt(this.numUrlSeenBuckets.getText());
+					int urlSeenByteSize = Integer.parseInt(this.numUrlSeenByteSize.getText());
+					int pldBuckets = Integer.parseInt(this.numPldIndegreeBuckets.getText());
+					int pldByteSize = Integer.parseInt(this.numPldIndegreeByteSize.getText());
+					int robotsCacheBuckets = Integer.parseInt(this.numRobotsCacheBuckets.getText());
+					int robotsCacheByteSize = Integer.parseInt(this.numRobotsCacheByteSize.getText());
+					int robotsRequestedBuckets = Integer.parseInt(this.numRobotsRequestedBuckets.getText());
+					int robotsRequestedByteSize = Integer.parseInt(this.numRobotsRequestedByteSize.getText());
+
+					Manager.getInstance().createCrawler(urls, crawlingThreads, robotsDownloader,
+							urlSeenBuckets, urlSeenByteSize, pldBuckets, pldByteSize,
+							robotsCacheBuckets, robotsCacheByteSize, robotsRequestedBuckets, robotsRequestedByteSize);
+
+					Manager.getInstance().getIRLbot().crawl();
+				}
+				catch (NumberFormatException nfE)
+				{
+					System.err.println("Error parsing String into an integer!");
+					nfE.printStackTrace();
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+				}
+				break;
+			case "stop":
+				this.btnAddSeedPage.setEnabled(true);
+				this.txtAddSeedPage.setEnabled(true);
+				this.lstSeedPages.setEnabled(true);
+				if (this.listModel.getSize() > 0)
+					this.btnClearList.setEnabled(true);
+				else
+					this.btnClearList.setEnabled(false);
+				this.btnPauseResumeCrawl.setEnabled(false);
+				this.btnStartStopCrawl.setText("start");
+
+				this.numCrawlingThreads.setEnabled(true);
+				this.numRobotsDownloaderThreads.setEnabled(true);
+				this.numUrlSeenBuckets.setEnabled(true);
+				this.numUrlSeenByteSize.setEnabled(true);
+				this.numPldIndegreeBuckets.setEnabled(true);
+				this.numPldIndegreeByteSize.setEnabled(true);
+				this.numRobotsCacheBuckets.setEnabled(true);
+				this.numRobotsCacheByteSize.setEnabled(true);
+				this.numRobotsRequestedBuckets.setEnabled(true);
+				this.numRobotsRequestedByteSize.setEnabled(true);
+
+				Manager.getInstance().getIRLbot().stop();
+				break;
+			case "pause":
+				this.btnPauseResumeCrawl.setText("resume");
+				break;
+			case "resume":
+				this.btnPauseResumeCrawl.setText("pause");
+				break;
 		}
 	}
 

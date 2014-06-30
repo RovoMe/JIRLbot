@@ -6,6 +6,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import at.rovo.caching.drum.util.DrumUtil;
@@ -28,10 +31,10 @@ import at.rovo.crawler.util.IRLbotUtil;
  * 
  * @author Roman Vottner
  */
-public class CrawlingThread implements Callable<CrawledPage>
+public final class CrawlingThread implements Callable<CrawledPage>
 {
 	/** The logger of this class **/
-	private final static Logger logger = LogManager.getLogger(CrawlingThread.class); 
+	private final static Logger LOG = LogManager.getLogger(CrawlingThread.class);
 	
 	/** The absolute URL of a web page **/
 	private String url = null;
@@ -70,7 +73,7 @@ public class CrawlingThread implements Callable<CrawledPage>
 	public CrawledPage call() throws Exception 
 	{
 		Set<String> foundURLs = new LinkedHashSet<>();
-		Set<String> uniquePLDs = new LinkedHashSet<String>();
+		Set<String> uniquePLDs = new LinkedHashSet<>();
 		
 		// read the web page
 		UrlReader reader = new UrlReader();
@@ -82,15 +85,21 @@ public class CrawlingThread implements Callable<CrawledPage>
 		// due to redirects the real URL may be hidden behind an origin URL
 		// the real URL may only be learned after following the redirect directives
 		this.url = reader.getRealURL();
-		
-		 String originPLD = IRLbotUtil.getPLDofURL(this.url);
+
+		String originPLD = IRLbotUtil.getPLDofURL(this.url);
 	     if (originPLD == null)
 	      	throw new Exception("could not extract PLD of URL: "+this.url+"; baseURL: "+baseURL);
-	     
-	    logger.debug("{} {}: PLD: {} ({})", Thread.currentThread().getName(), this.url, originPLD, DrumUtil.hash(originPLD));
-		
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("{} Crawling: {} - PLD: {} ({})",
+					Thread.currentThread().getName(),
+					this.url,
+					originPLD,
+					DrumUtil.hash(originPLD));
+		}
+
 		// find all links inside the page
-		Pattern pattern = Pattern.compile("<[aA] [hH][rR][eE][fF]=\"(.*?)\"");
+		Pattern pattern = Pattern.compile("<[aA] ([a-zA-Z0-9.,:;/#\" ])*?[hH][rR][eE][fF]=\"(.*?)\"");
 		// remove scripts
 		webPage = webPage.replaceAll("<[sS][cC][rR][iI][pP][tT](.*?)</[sS][cC][rR][iI][pP][tT]>", "<script></script>");
 		// remove comments
@@ -100,34 +109,53 @@ public class CrawlingThread implements Callable<CrawledPage>
         while (matcher.find()) 
         {
         	// extract URLs
-        	String _url = matcher.group(1);
+        	String _url = matcher.group(2);
         	String validURL = "";
         	try
         	{
+				// some URLs are not in a valid format as they use local
+				// referencing like f.e. '../home.html' or '#start'. So we need
+				// to transform those links to valid URLs
             	validURL = IRLbotUtil.checkAndTransformURL(_url, this.url);
 	        	if (validURL != null)
 	        	{
+					// the pay level domain (PLD) is the actual domain name
+					// without any prefixes like www or something similar. E.g:
+					// http://www.example.org --> example.org
+					// https://server1.subdomain.example.org --> example.org
 	        		String PLD = IRLbotUtil.getPLDofURL(validURL);
 	        		if (PLD != null)
 	        		{
 	        			foundURLs.add(validURL);
-	        			// aggregate PLD-PLD link information and send it to a DRUM structure
+	        			// aggregate PLD-PLD link information and send it to a
+	        			// DRUM structure
 	        			uniquePLDs.add(PLD);
-	        			logger.debug("{} "+"\tURL found: {} PLD: {}", Thread.currentThread().getName(), validURL, PLD);
+						if (LOG.isDebugEnabled())
+						{
+	        				LOG.debug("{} "+"\tURL found: {} PLD: {}",
+									Thread.currentThread().getName(),
+									validURL,
+									PLD);
+						}
 	        		}
 	        	}
         	}
         	catch (Exception e)
         	{
-        		logger.error("Error extracting URLs from: {} - matcher: {}, validated to: {}! Reason: {}", this.url, _url, validURL, e.getLocalizedMessage());
-        		logger.catching(e);
-        		continue;
+        		LOG.error("Error extracting URLs from: {} - matcher: {}, validated to: {}! Reason: {}",
+						this.url,
+						_url,
+						validURL,
+						e.getLocalizedMessage());
+        		LOG.catching(Level.ERROR, e);
         	}
         }
-       
+
+		// send the PLD-PLD information to STAR so the budget can be calculated
+		// correctly
         this.pldIndegree.update(originPLD, uniquePLDs);
 
-        CrawledPage page = new CrawledPage(baseURL, foundURLs);
-		return page;
+		// return all of the unique URLs found on this page
+        return new CrawledPage(baseURL, foundURLs);
 	}
 }

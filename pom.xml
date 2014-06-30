@@ -1,61 +1,71 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>at.rovo.webcrawler.IRLbot</groupId>
-  <artifactId>IRLbot</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  <name>IRLbot Web Crawler</name>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-  
-  <dependencies>
-    <!-- Log4J -->
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <version>2.0-beta6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>2.0-beta6</version>
-    </dependency>
-    <!-- JUnit -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Common -->
-    <dependency>
-      <groupId>at.rovo.common</groupId>
-      <artifactId>Common</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <!-- DRUM -->
-    <dependency>
-      <groupId>at.rovo.caching.drum</groupId>
-      <artifactId>Drum</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
-  
-  <description>Java implementation of the IRLbot web crawler as presented by Lee, Leonard, Wang and Loguinov in their paper "IRLbot: Scaling to 6 Billion Pages and Beyond"</description>  
-  
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<groupId>at.rovo</groupId>
+	<artifactId>JIRLbot</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>IRLbot Web Crawler</name>
+	<description>Java implementation of the IRLbot web crawler as presented by Lee, Leonard, Wang and Loguinov in their paper "IRLbot: Scaling to 6 Billion Pages and Beyond"</description>
+
+	<parent>
+		<groupId>at.rovo</groupId>
+		<artifactId>super-pom</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+		<!-- Log4J -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+		<!-- JUnit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Common -->
+		<dependency>
+			<groupId>at.rovo</groupId>
+			<artifactId>Common</artifactId>
+			<version>${commons.version}</version>
+		</dependency>
+		<!-- DRUM -->
+		<dependency>
+			<groupId>at.rovo</groupId>
+			<artifactId>Drum</artifactId>
+			<version>${drum.version}</version>
+		</dependency>
+		<!-- Seaglass Look and Feel -->
+		<dependency>
+			<groupId>com.seaglasslookandfeel</groupId>
+			<artifactId>seaglasslookandfeel</artifactId>
+			<version>${seaglass.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<!-- Surefire is a test framework project. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>

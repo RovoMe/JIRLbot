@@ -17,7 +17,7 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 
   <appenders>
   	<Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
       <!-- ThresholdFilter returns the onMatch result if the level in the LogEvent 
       is the same or more specific than the configured level and the onMismatch 
       value otherwise. For example, if the ThresholdFilter is configured with 
@@ -33,14 +33,14 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
     </Console>
     <!-- ... show them on the error-console! -->
     <Console name="Error" target="SYSTEM_ERR">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
       <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
     </Console>
     <File name="CrawlerFile" fileName="${fileName}" append="false">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
     </File>
     <File name="DRUMFile" fileName="${drumFile}" append="false">
-      <PatternLayout pattern="%d{HH:mm:ss} %p %C{1}.%M() - %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
     </File>
   </appenders>
   
@@ -48,16 +48,13 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
 	<logger name="at.rovo.crawler.IRLbot" level="info" additivity="true">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.CrawlingThread" level="error" additivity="false">
+	<logger name="at.rovo.crawler.CrawlingThread" level="info" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
 	<logger name="at.rovo.crawler.UniqueUrlDispatcher" level="error" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
-	<logger name="at.rovo.crawler.STAR" level="error" additivity="false">
-	  <appender-ref ref="CrawlerFile"/>
-	</logger>
-	<logger name="at.rovo.crawler.STARDispatcher" level="error" additivity="false">
+	<logger name="at.rovo.crawler.STAR" level="info" additivity="false">
 	  <appender-ref ref="CrawlerFile"/>
 	</logger>
 	<logger name="at.rovo.crawler.BEAST" level="error" additivity="false">
