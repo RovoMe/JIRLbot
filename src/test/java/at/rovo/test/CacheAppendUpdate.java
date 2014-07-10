@@ -37,7 +37,7 @@ public class CacheAppendUpdate extends BaseCacheTest
 	@Test
 	public void test() throws DrumException
 	{
-		CacheFile<PLDData> cache = new CacheFile<>(this.testDir+"/cache.db","test",PLDData.class);
+		CacheFile<PLDData, StringSerializer> cache = new CacheFile<>(this.testDir+"/cache.db","test",PLDData.class);
 
 		// old file on disk to merge with: (1; 2; <3, 7>), (5; 2; <2, 19>), (76; 4; <5, 13, 22, 88)
 		// parameters: (nodeId; number of linked elements; <each linked element>)
@@ -142,11 +142,10 @@ public class CacheAppendUpdate extends BaseCacheTest
 		assertEquals(2, values.get(0).getIndegreeNeighbors().size());
 		assertEquals(5, values.get(1).getIndegreeNeighbors().size());
 		assertEquals(5, values.get(2).getIndegreeNeighbors().size());
+		// the first set wasn't modified so it should contain the original entries
 		assertTrue(values.get(0).getIndegreeNeighbors().containsAll(neighbor1));
-		neighbor2.addAll(neighbor2v2);
-		assertTrue(values.get(1).getIndegreeNeighbors().containsAll(neighbor2));
-		neighbor3.addAll(neighbor3v2);
-		assertTrue(values.get(2).getIndegreeNeighbors().containsAll(neighbor3));
+		assertTrue(values.get(1).getIndegreeNeighbors().containsAll(neighbor2v2));
+		assertTrue(values.get(2).getIndegreeNeighbors().containsAll(neighbor3v2));
 		
 		// close the cache file so we can delete the cache.db file
 		cache.close();

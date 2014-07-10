@@ -1,10 +1,10 @@
 package at.rovo.crawler;
 
+import at.rovo.caching.drum.Dispatcher;
 import at.rovo.caching.drum.Drum;
+import at.rovo.caching.drum.DrumBuilder;
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.IDispatcher;
-import at.rovo.caching.drum.IDrum;
-import at.rovo.caching.drum.IDrumListener;
+import at.rovo.caching.drum.DrumListener;
 import at.rovo.caching.drum.data.StringSerializer;
 import at.rovo.caching.drum.util.DrumUtil;
 import at.rovo.crawler.bean.HostData;
@@ -22,7 +22,7 @@ import at.rovo.crawler.bean.HostData;
 public final class RobotsRequested
 {
 	/** The backing cache to be used **/
-	private IDrum<HostData, StringSerializer> drum = null;
+	private Drum<HostData, StringSerializer> drum = null;
 	/** The number of bucket files the DRUM instance should handle **/
 	private int numBuckets = 0;
 
@@ -51,12 +51,12 @@ public final class RobotsRequested
 	 *           Will be thrown if the backing <em>DRUM</em> instance could not
 	 *           get initialized
 	 */
-	public RobotsRequested(IDispatcher<HostData, StringSerializer> dispatcher, int numBuckets, int byteSize, IDrumListener listener) throws DrumException
+	public RobotsRequested(Dispatcher<HostData, StringSerializer> dispatcher, int numBuckets, int byteSize, DrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		try
 		{
-			this.drum = new Drum.Builder<>("robotsRequested", HostData.class, StringSerializer.class)
+			this.drum = new DrumBuilder<>("robotsRequested", HostData.class, StringSerializer.class)
 				.numBucket(numBuckets)
 				.bufferSize(byteSize)
 				.dispatcher(dispatcher)

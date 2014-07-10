@@ -17,10 +17,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import at.rovo.caching.drum.DrumListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.IDrumListener;
 import at.rovo.caching.drum.event.DrumEvent;
 import at.rovo.caching.drum.util.DrumUtil;
 import at.rovo.caching.drum.util.NamedThreadFactory;
@@ -60,7 +60,7 @@ import at.rovo.crawler.util.IRLbotUtil;
 @SuppressWarnings("unused")
 public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener, 
 	BEASTBudgetPassedListener, RobotsCachePassedListener, RobotsRequestedListener,
-	IDrumListener
+		DrumListener
 {
 	/** The logger of this class **/
 	private final static Logger LOG = LogManager.getLogger(IRLbot.class);

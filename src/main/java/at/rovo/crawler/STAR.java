@@ -6,13 +6,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import at.rovo.caching.drum.Drum;
+import at.rovo.caching.drum.DrumBuilder;
+import at.rovo.caching.drum.DrumListener;
 import at.rovo.crawler.util.IRLbotUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import at.rovo.caching.drum.Drum;
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.IDrum;
-import at.rovo.caching.drum.IDrumListener;
 import at.rovo.caching.drum.NullDispatcher;
 import at.rovo.caching.drum.data.StringSerializer;
 import at.rovo.caching.drum.util.DrumUtil;
@@ -50,7 +50,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
 	private final static Logger LOG = LogManager.getLogger(STAR.class);
 
 	/** The DRUM object managing the update and unique/duplicate checking **/
-	private IDrum<PLDData, StringSerializer> drum = null;
+	private Drum<PLDData, StringSerializer> drum = null;
 	/** The registered listeners **/
 	private List<CheckSpamUrlListener> listeners = null;
 	/** The number of buckets used by the STAR structure **/
@@ -92,7 +92,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
 		this.numBuckets = 1024;
 		try
 		{
-		this.drum = new Drum.Builder<>("pldIndegree", PLDData.class, StringSerializer.class)
+		this.drum = new DrumBuilder<>("pldIndegree", PLDData.class, StringSerializer.class)
 				.numBucket(1024)
 				.bufferSize(65536)
 				.dispatcher(this)
@@ -122,13 +122,13 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
 	 *             If any exception during the initialization of the backing
 	 *             DRUM cache occurs
 	 */
-	public STAR(int numBuckets, int bucketByteSize, IDrumListener listener)
+	public STAR(int numBuckets, int bucketByteSize, DrumListener listener)
 			throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		try
 		{
-			this.drum = new Drum.Builder<>("pldIndegree", PLDData.class, StringSerializer.class)
+			this.drum = new DrumBuilder<>("pldIndegree", PLDData.class, StringSerializer.class)
 					.numBucket(numBuckets)
 					.bufferSize(bucketByteSize)
 					.dispatcher(this)

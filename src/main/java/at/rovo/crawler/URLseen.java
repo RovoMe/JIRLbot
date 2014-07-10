@@ -1,10 +1,10 @@
 package at.rovo.crawler;
 
+import at.rovo.caching.drum.Dispatcher;
 import at.rovo.caching.drum.Drum;
+import at.rovo.caching.drum.DrumBuilder;
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.IDispatcher;
-import at.rovo.caching.drum.IDrum;
-import at.rovo.caching.drum.IDrumListener;
+import at.rovo.caching.drum.DrumListener;
 import at.rovo.caching.drum.data.StringSerializer;
 import at.rovo.caching.drum.util.DrumUtil;
 
@@ -24,7 +24,7 @@ import at.rovo.caching.drum.util.DrumUtil;
 public final class URLseen
 {
 	/** The backing DRUM cache instance **/
-	private IDrum<StringSerializer, StringSerializer> drum = null;
+	private Drum<StringSerializer, StringSerializer> drum = null;
 	/** The number of buckets used by the backing DRUM instance **/
 	private int numBuckets = 0;
 
@@ -50,14 +50,14 @@ public final class URLseen
 	 * @throws DrumException If any exceptions are thrown by the backing DRUM
 	 *         cache instance
 	 */
-	public URLseen(IDispatcher<StringSerializer, StringSerializer> dispatcher,
-				   int numBuckets, int bucketByteSize, IDrumListener listener)
+	public URLseen(Dispatcher<StringSerializer, StringSerializer> dispatcher,
+				   int numBuckets, int bucketByteSize, DrumListener listener)
 			throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		try
 		{
-			this.drum = new Drum.Builder<>(
+			this.drum = new DrumBuilder<>(
 					"urlSeen",
 					StringSerializer.class,
 					StringSerializer.class)
@@ -80,7 +80,7 @@ public final class URLseen
 	 * </p>
 	 * <p>
 	 * The provided URL and data will be sent to the backing <em>DRUM</em>
-	 * instance. Results will be dispatched via the {@link IDispatcher}
+	 * instance. Results will be dispatched via the {@link at.rovo.caching.drum.Dispatcher}
 	 * provided via initialization.
 	 * </p>
 	 * @param data
@@ -102,7 +102,7 @@ public final class URLseen
 
 	/**
 	 * <p>
-	 * Invokes {@link IDrum#dispose()} on the backing <em>DRUM</em> cache
+	 * Invokes {@link at.rovo.caching.drum.Drum#dispose()} on the backing <em>DRUM</em> cache
 	 * </p>
 	 *
 	 * @throws DrumException If during the disposal an exception was caught

@@ -1,12 +1,12 @@
 package at.rovo.crawler;
 
+import at.rovo.caching.drum.Dispatcher;
+import at.rovo.caching.drum.DrumBuilder;
+import at.rovo.caching.drum.DrumListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import at.rovo.caching.drum.Drum;
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.IDispatcher;
-import at.rovo.caching.drum.IDrum;
-import at.rovo.caching.drum.IDrumListener;
+import at.rovo.caching.drum.Drum;
 import at.rovo.caching.drum.data.StringSerializer;
 import at.rovo.caching.drum.util.DrumUtil;
 import at.rovo.crawler.bean.HostData;
@@ -26,14 +26,14 @@ public final class RobotsCache
 	private final static Logger LOG = LogManager.getLogger(IRLbot.class);
 	
 	private int numBuckets = 0;
-	private IDrum<HostData,StringSerializer> drum = null;
+	private Drum<HostData,StringSerializer> drum = null;
 	
-	public RobotsCache(String name, IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize) throws DrumException
+	public RobotsCache(String name, Dispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		try
 		{
-			this.drum = new Drum.Builder<>(name, HostData.class, StringSerializer.class)
+			this.drum = new DrumBuilder<>(name, HostData.class, StringSerializer.class)
 					.numBucket(numBuckets)
 					.bufferSize(bucketByteSize)
 					.dispatcher(dispatcher)
@@ -45,12 +45,12 @@ public final class RobotsCache
 		}
 	}
 	
-	public RobotsCache(IDispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, IDrumListener listener) throws DrumException
+	public RobotsCache(Dispatcher<HostData,StringSerializer> dispatcher, int numBuckets, int bucketByteSize, DrumListener listener) throws DrumException
 	{
 		this.numBuckets = numBuckets;
 		try
 		{
-			this.drum = new Drum.Builder<>("robotsCache", HostData.class, StringSerializer.class)
+			this.drum = new DrumBuilder<>("robotsCache", HostData.class, StringSerializer.class)
 					.numBucket(numBuckets)
 					.bufferSize(bucketByteSize)
 					.dispatcher(dispatcher)

@@ -7,17 +7,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import at.rovo.caching.drum.DrumListener;
 import org.junit.Assert;
 import org.junit.Test;
 
 import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.IDrumListener;
 import at.rovo.caching.drum.event.DrumEvent;
 import at.rovo.crawler.STAR;
 import at.rovo.crawler.bean.PLDData;
 import at.rovo.crawler.interfaces.CheckSpamUrlListener;
 
-public class STARTest extends BaseCacheTest implements IDrumListener, CheckSpamUrlListener
+public class STARTest extends BaseCacheTest implements DrumListener, CheckSpamUrlListener
 {
 	private STAR star = null;
 	private String checkReturnURL = null;
