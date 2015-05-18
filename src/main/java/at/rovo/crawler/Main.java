@@ -1,5 +1,6 @@
-package at.rovo.crawler.gui;
+package at.rovo.crawler;
 
+import at.rovo.crawler.gui.MainWindow;
 import java.lang.invoke.MethodHandles;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -25,13 +26,6 @@ public class Main implements Runnable
             //                                                      // GTK installed
             "javax.swing.plaf.nimbus.NimbusLookAndFeel", "javax.swing.plaf.metal.MetalLookAndFeel",
             "javax.swing.plaf.basic.BasicLookAndFeel", "com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-
-//    public static void initLogger() throws URISyntaxException
-//    {
-//        String path = Main.class.getResource("/log4j2.xml").toURI().getPath();
-//        System.setProperty("log4j.configurationFile", path);
-//        LOG = LogManager.getLogger(Main.class);
-//    }
 
     public static void main(String[] args) throws URISyntaxException
     {
