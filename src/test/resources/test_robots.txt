@@ -1,0 +1,16 @@
+# robots.txt für example.com
+# Diese Webcrawler schließe ich aus
+User-agent: Sidewinder
+Disallow: /
+
+User-agent: Microsoft.URL.Control
+Disallow: /
+
+# Diese Verzeichnisse/Dateien sollen nicht
+# durchsucht werden
+User-agent: *
+Disallow: /default.html
+Disallow: /Temp/ # diese Inhalte verschwinden bald
+Disallow: /Privat/Familie/Geburtstage.html # Nicht geheim, sollen aber nicht in Suchmaschinen gelistet werden.
+Disallow: /test/*/index.html
+Allow: /test/junit/index.html

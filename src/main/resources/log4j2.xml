@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Possible log-levels: TRACE, DEBUG, INFO, WARN, ERROR, ALL or OFF - ERROR more specific than DEBUG-->
+<!-- 
+http://logging.apache.org/log4j/2.x/manual/layouts.html
+	%C{1} : at.rovo.Main -> Main
+	%C{1.} : at.rovo.Main -> at.rovo.Main
+	%d{HH:mm:ss.SSS} : 19:27:32.1234
+	%p : Level of the event
+	%t : Thread that produced the logging-event
+ -->
+<configuration status="warn" name="Crawler" packages="at.rovo.crawler">
+
+    <properties>
+        <property name="fileName">log/Crawler.log</property>
+        <property name="drumFile">log/DRUM.log</property>
+    </properties>
+
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
+            <!-- ThresholdFilter returns the onMatch result if the level in the LogEvent
+            is the same or more specific than the configured level and the onMismatch
+            value otherwise. For example, if the ThresholdFilter is configured with
+            Level ERROR and the LogEvent contains Level DEBUG then the onMismatch
+            value will be returned since ERROR events are more specific than DEBUG.
+            The default Level is ERROR.  -->
+            <!-- accept INFO and WARN messages but don't show ERRORs on the system-output ... -->
+            <filters>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            </filters>
+        </Console>
+        <!-- ... show them on the error-console! -->
+        <Console name="Error" target="SYSTEM_ERR">
+            <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+        <File name="CrawlerFile" fileName="${fileName}" append="false">
+            <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
+        </File>
+        <File name="DRUMFile" fileName="${drumFile}" append="false">
+            <PatternLayout pattern="%d{HH:mm:ss} %-5p %C{1}.%M() - %m%n%ex"/>
+        </File>
+    </appenders>
+
+    <loggers>
+        <logger name="at.rovo.crawler.IRLbot" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.CrawlingThread" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.UniqueUrlDispatcher" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.STAR" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.BEAST" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.RobotsCache" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.RobotsRequested" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+        <logger name="at.rovo.crawler.RobotsCacheDispatcher" level="debug" additivity="false">
+            <appender-ref ref="CrawlerFile"/>
+        </logger>
+
+        <logger name="at.rovo.caching.drum" level="error" additivity="false">
+            <appender-ref ref="DRUMFile"/>
+        </logger>
+
+        <logger name="at.rovo.crawler" level="debug" additivity="true">
+            <appender-ref ref="Console"/>
+        </logger>
+        <root level="error">
+            <appender-ref ref="Error"/>
+        </root>
+    </loggers>
+</configuration>

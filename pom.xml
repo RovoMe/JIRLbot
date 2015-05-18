@@ -1,71 +1,84 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>at.rovo</groupId>
-	<artifactId>JIRLbot</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <artifactId>JIRLbot</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-	<name>IRLbot Web Crawler</name>
-	<description>Java implementation of the IRLbot web crawler as presented by Lee, Leonard, Wang and Loguinov in their paper "IRLbot: Scaling to 6 Billion Pages and Beyond"</description>
+    <name>IRLbot Web Crawler</name>
+    <description>Java implementation of the IRLbot web crawler as presented by Lee, Leonard, Wang and Loguinov in their
+        paper "IRLbot: Scaling to 6 Billion Pages and Beyond"
+    </description>
 
-	<parent>
-		<groupId>at.rovo</groupId>
-		<artifactId>super-pom</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>at.rovo</groupId>
+        <artifactId>super-pom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<dependencies>
-		<!-- Log4J -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-		</dependency>
-		<!-- JUnit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- Common -->
-		<dependency>
-			<groupId>at.rovo</groupId>
-			<artifactId>Common</artifactId>
-			<version>${commons.version}</version>
-		</dependency>
-		<!-- DRUM -->
-		<dependency>
-			<groupId>at.rovo</groupId>
-			<artifactId>Drum</artifactId>
-			<version>${drum.version}</version>
-		</dependency>
-		<!-- Seaglass Look and Feel -->
-		<dependency>
-			<groupId>com.seaglasslookandfeel</groupId>
-			<artifactId>seaglasslookandfeel</artifactId>
-			<version>${seaglass.version}</version>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <!-- Log4J -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <!-- Common -->
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>Common</artifactId>
+            <version>${commons.version}</version>
+        </dependency>
+        <!-- DRUM -->
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>Drum</artifactId>
+            <version>${drum.version}</version>
+        </dependency>
+        <!-- Seaglass Look and Feel -->
+        <dependency>
+            <groupId>com.seaglasslookandfeel</groupId>
+            <artifactId>seaglasslookandfeel</artifactId>
+            <version>${seaglass.version}</version>
+        </dependency>
+        <!-- Locking on String values -->
+        <dependency>
+            <groupId>de.jkeylockmanager</groupId>
+            <artifactId>jkeylockmanager</artifactId>
+            <version>2.0.0</version>
+        </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<!-- Surefire is a test framework project. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+        <!-- JUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <!-- Surefire is a test framework project. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -5,12 +5,10 @@ import java.io.FileFilter;
 
 public class kvFileFilter implements FileFilter
 {
-	@Override
-	public boolean accept(File pathname)
-	{
-		if (pathname.getName().endsWith("kv"))
-			return true;
-		return false;
-	}
+    @Override
+    public boolean accept(File pathname)
+    {
+        return pathname.getName().endsWith("kv");
+    }
 
 }

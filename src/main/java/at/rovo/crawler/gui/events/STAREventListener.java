@@ -4,6 +4,7 @@ import at.rovo.caching.drum.event.DrumEvent;
 
 public interface STAREventListener
 {
-	public void stateChanged(DrumEvent<? extends DrumEvent<?>> event);
-	public void actionPerformed(DrumEvent<? extends DrumEvent<?>> event);
+    void stateChanged(DrumEvent<? extends DrumEvent<?>> event);
+
+    void actionPerformed(DrumEvent<? extends DrumEvent<?>> event);
 }

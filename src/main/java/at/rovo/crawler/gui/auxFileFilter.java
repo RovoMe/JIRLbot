@@ -6,12 +6,14 @@ import java.io.FileFilter;
 public class auxFileFilter implements FileFilter
 {
 
-	@Override
-	public boolean accept(File pathname)
-	{
-		if (pathname.getName().endsWith(".aux"))
-			return true;
-		return false;
-	}
+    @Override
+    public boolean accept(File pathname)
+    {
+        if (pathname.getName().endsWith(".aux"))
+        {
+            return true;
+        }
+        return false;
+    }
 
 }

@@ -6,12 +6,9 @@ import java.io.FileFilter;
 public class dbFileFilter implements FileFilter
 {
 
-	@Override
-	public boolean accept(File pathname)
-	{
-		if (pathname.getName().equals("cache.db"))
-			return true;
-		return false;
-	}
-
+    @Override
+    public boolean accept(File pathname)
+    {
+        return pathname.getName().equals("cache.db");
+    }
 }
