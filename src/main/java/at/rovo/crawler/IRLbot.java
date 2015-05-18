@@ -507,12 +507,12 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
                 CrawlingThread crawler = new CrawlingThread(pageToCrawl, this.pldIndegree);
                 this.numPagesCrawledTotal.incrementAndGet();
                 this.waitingList.put(pageToCrawl, executor.submit(crawler));
-
-                this.checkResults();
-
-                this.informOnNumURLsCrawledTotalChanged(this.numPagesCrawledTotal.get());
-                this.informOnNumURLsCrawledSuccessChanged(this.numPagesCrawledSuccess.get());
             }
+            this.checkResults();
+
+            this.informOnNumURLsCrawledTotalChanged(this.numPagesCrawledTotal.get());
+            this.informOnNumURLsCrawledSuccessChanged(this.numPagesCrawledSuccess.get());
+
         }
         LOG.info("crawler stopped: {}", this.stopRequested);
         LOG.info("size of the queue of URLs to read: {}", this.toCrawl.size());
@@ -547,18 +547,18 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
     private boolean checkAndRequeue(String pld, DelayedCrawlUrl delayedUrl)
     {
         long currentTime = System.currentTimeMillis();
-        if (LOG.isTraceEnabled())
+        //        if (LOG.isTraceEnabled())
         {
-            LOG.trace(
+            LOG.debug(
                     "PLD {} for URL {} has a delay of {} seconds specified - last crawled: {} - current time: {} - diff: {}",
                     pld, delayedUrl.getUrl(), delayedUrl.getPldDelay(), this.pldLastCrawled.get(pld).get(), currentTime,
                     currentTime - this.pldLastCrawled.get(pld).get());
         }
         if (needsReQueueing(pld, delayedUrl, currentTime))
         {
-            if (LOG.isTraceEnabled())
+            //            if (LOG.isTraceEnabled())
             {
-                LOG.trace("{} - Re-Queue {} - lastCrawl: {} delay: {} seconds currentTime: {}",
+                LOG.debug("{} - Re-Queue {} - lastCrawl: {} delay: {} seconds currentTime: {}",
                           Thread.currentThread().getName(), delayedUrl.getUrl(), this.pldLastCrawled.get(pld).get(),
                           delayedUrl.getPldDelay(), currentTime);
             }
@@ -569,9 +569,9 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         }
         else
         {
-            if (LOG.isTraceEnabled())
+            //            if (LOG.isTraceEnabled())
             {
-                LOG.trace("PLD {} for URL {} was last crawled {} seconds ago", pld, delayedUrl.getUrl(),
+                LOG.debug("PLD {} for URL {} was last crawled {} seconds ago", pld, delayedUrl.getUrl(),
                           currentTime - this.pldLastCrawled.get(pld).get());
             }
             // update the timestamp of the last crawl of the PLD
@@ -633,6 +633,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
      */
     private synchronized void checkResults()
     {
+        LOG.debug("Checking crawl results");
         List<String> removeList = new ArrayList<>();
         for (Future<CrawledPage> result : this.waitingList.values())
         {
