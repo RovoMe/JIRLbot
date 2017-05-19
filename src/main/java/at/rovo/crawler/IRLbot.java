@@ -1,10 +1,5 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumListener;
-import at.rovo.caching.drum.event.DrumEvent;
-import at.rovo.caching.drum.util.DrumUtils;
-import at.rovo.caching.drum.util.NamedThreadFactory;
 import at.rovo.common.UrlReader;
 import at.rovo.crawler.bean.CrawledPage;
 import at.rovo.crawler.bean.HostData;
@@ -16,6 +11,11 @@ import at.rovo.crawler.interfaces.RobotsRequestedListener;
 import at.rovo.crawler.interfaces.UniqueUrlListener;
 import at.rovo.crawler.util.DelayedCrawlUrl;
 import at.rovo.crawler.util.IRLbotUtils;
+import at.rovo.drum.DrumException;
+import at.rovo.drum.DrumListener;
+import at.rovo.drum.event.DrumEvent;
+import at.rovo.drum.util.DrumUtils;
+import at.rovo.drum.util.NamedThreadFactory;
 import de.jkeylockmanager.manager.KeyLockManager;
 import de.jkeylockmanager.manager.KeyLockManagers;
 import java.util.ArrayList;
@@ -54,7 +54,6 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Roman Vottner
  */
-@SuppressWarnings("unused")
 public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener, BEASTBudgetPassedListener,
         RobotsCachePassedListener, RobotsRequestedListener, DrumListener
 {
@@ -117,7 +116,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
      * As re-queuing URLs is PLD specific a custom locking is needed so that the check can be entered by other PLDs but
      * still avoid running into race-conditions.
      **/
-    final KeyLockManager lockManager = KeyLockManagers.newLock();
+    private final KeyLockManager lockManager = KeyLockManagers.newLock();
 
 
     /**
@@ -504,6 +503,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
                 }
 
                 LOG.info("crawling page: {}", pageToCrawl);
+                // FIXME: change Future<T> with CompleteFuture<T> in order to execute a lambda expression on completion
                 CrawlingThread crawler = new CrawlingThread(pageToCrawl, this.pldIndegree);
                 this.numPagesCrawledTotal.incrementAndGet();
                 this.waitingList.put(pageToCrawl, executor.submit(crawler));
@@ -639,8 +639,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         {
             if (result.isDone())
             {
-                // Results are ready - get them and send them to the
-                // URLseen instance
+                // Results are ready - get them and send them to the URLseen instance
                 try
                 {
                     CrawledPage page = result.get();
@@ -860,11 +859,15 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
                         String robotsFile = reader.readPage(hostName + "/robots.txt");
                         if (robotsFile != null && !"".equals(robotsFile))
                         {
-                            HostData hostData = new HostData(hostName, null, null);
+                            HostData hostData;
                             // avoid HTML pages which just return "no robots.txt"
                             if (robotsFile.toLowerCase().contains("user-agent:"))
                             {
-                                hostData.setRobotsTxt(robotsFile);
+                                hostData = new HostData(hostName, null, robotsFile);
+                            }
+                            else
+                            {
+                                hostData = new HostData(hostName, null, null);
                             }
                             robotsCache.update(DrumUtils.hash(hostName), hostData);
                             LOG.debug("Received robots.txt for host: {}; content: '{}'", hostName, robotsFile);

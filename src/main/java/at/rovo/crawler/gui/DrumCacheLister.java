@@ -1,6 +1,6 @@
 package at.rovo.crawler.gui;
 
-import at.rovo.caching.drum.util.DrumUtils;
+import at.rovo.drum.util.DrumUtils;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Cursor;

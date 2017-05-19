@@ -1,12 +1,12 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.Dispatcher;
-import at.rovo.caching.drum.Drum;
-import at.rovo.caching.drum.DrumBuilder;
-import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumListener;
-import at.rovo.caching.drum.data.StringSerializer;
-import at.rovo.caching.drum.util.DrumUtils;
+import at.rovo.drum.Dispatcher;
+import at.rovo.drum.Drum;
+import at.rovo.drum.DrumBuilder;
+import at.rovo.drum.DrumException;
+import at.rovo.drum.DrumListener;
+import at.rovo.drum.berkeley.BerkeleyDBStoreMerger;
+import at.rovo.drum.util.DrumUtils;
 
 /**
  * URLSeen stores a set of URLs inside a DRUM cache. {@link #checkURL(String, String)} provides a mechanism to check and
@@ -19,7 +19,7 @@ import at.rovo.caching.drum.util.DrumUtils;
 public final class URLseen
 {
     /** The backing DRUM cache instance **/
-    private Drum<StringSerializer, StringSerializer> drum = null;
+    private Drum<String, String> drum = null;
     /** The number of buckets used by the backing DRUM instance **/
     private int numBuckets = 0;
 
@@ -40,15 +40,20 @@ public final class URLseen
      * @throws DrumException
      *         If any exceptions are thrown by the backing DRUM cache instance
      */
-    public URLseen(Dispatcher<StringSerializer, StringSerializer> dispatcher, int numBuckets, int bucketByteSize,
+    public URLseen(Dispatcher<String, String> dispatcher, int numBuckets, int bucketByteSize,
                    DrumListener listener) throws DrumException
     {
         this.numBuckets = numBuckets;
         try
         {
             this.drum =
-                    new DrumBuilder<>("urlSeen", StringSerializer.class, StringSerializer.class).numBucket(numBuckets)
-                            .bufferSize(bucketByteSize).dispatcher(dispatcher).listener(listener).build();
+                    new DrumBuilder<>("urlSeen", String.class, String.class)
+                            .numBucket(numBuckets)
+                            .bufferSize(bucketByteSize)
+                            .dispatcher(dispatcher)
+                            .listener(listener)
+                            .datastore(BerkeleyDBStoreMerger.class)
+                            .build();
         }
         catch (Exception e)
         {
@@ -61,7 +66,7 @@ public final class URLseen
      * added to the URL.
      * <p>
      * The provided URL and data will be sent to the backing <em>DRUM</em> instance. Results will be dispatched via the
-     * {@link at.rovo.caching.drum.Dispatcher} provided via initialization.
+     * {@link at.rovo.drum.Dispatcher} provided via initialization.
      *
      * @param data
      *         Any additional data which should be passed via the URL for later use
@@ -70,21 +75,11 @@ public final class URLseen
      */
     public void checkURL(String data, String url)
     {
-        StringSerializer valString = null;
-        if (data != null)
-        {
-            valString = new StringSerializer(data);
-        }
-        StringSerializer auxString = null;
-        if (url != null)
-        {
-            auxString = new StringSerializer(url);
-        }
-        this.drum.checkUpdate(DrumUtils.hash(url), valString, auxString);
+        this.drum.checkUpdate(DrumUtils.hash(url), data, url);
     }
 
     /**
-     * Invokes {@link at.rovo.caching.drum.Drum#dispose()} on the backing <em>DRUM</em> cache
+     * Invokes {@link at.rovo.drum.Drum#dispose()} on the backing <em>DRUM</em> cache
      *
      * @throws DrumException
      *         If during the disposal an exception was caught

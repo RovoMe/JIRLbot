@@ -1,17 +1,16 @@
 package at.rovo.crawler.bean;
 
-import at.rovo.caching.drum.data.AppendableData;
-import at.rovo.caching.drum.util.DrumUtils;
+import at.rovo.drum.data.AppendableData;
+import at.rovo.drum.util.DrumUtils;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-@SuppressWarnings({"unused", "NullableProblems"})
 public class PLDData implements AppendableData<PLDData>, Comparable<PLDData>
 {
     private long hash = 0;
     private int budget = 0;
-    private Set<Long> indegreeNeighbors = null;
+    private Set<Long> indegreeNeighbors;
     private transient String pld = null;
 
     public PLDData()
@@ -134,8 +133,47 @@ public class PLDData implements AppendableData<PLDData>, Comparable<PLDData>
         }
     }
 
+    private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException
+    {
+        // 8 bytes long - hash
+        stream.writeLong(this.hash);
+        // 4 bytes int - length of indegreeNeighobrs
+        stream.writeInt(this.indegreeNeighbors.size());
+        for (Long neighbor : this.indegreeNeighbors)
+        {
+            // 8 bytes long - neighbor hash
+            stream.writeLong(neighbor);
+        }
+        // 4 bytes int - budget value
+        stream.writeInt(this.budget);
+    }
+
+    private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException
+    {
+        if (null != this.indegreeNeighbors)
+        {
+            this.indegreeNeighbors.clear();
+        }
+        else
+        {
+            this.indegreeNeighbors = new LinkedHashSet<>();
+        }
+
+        // read hash
+        this.hash = stream.readLong();
+        // read neighbors length
+        int neighborsLength = stream.readInt();
+        this.indegreeNeighbors.clear();
+        for (int i = 0; i < neighborsLength; i++)
+        {
+            long neighborHash = stream.readLong();
+            this.indegreeNeighbors.add(neighborHash);
+        }
+        this.budget = stream.readInt();
+    }
+
     @Override
-    public synchronized byte[] toBytes()
+    public byte[] toBytes()
     {
         int size = 12 + 8 * this.indegreeNeighbors.size() + 4;
         byte[] totalBytes = new byte[size];
@@ -157,7 +195,7 @@ public class PLDData implements AppendableData<PLDData>, Comparable<PLDData>
     }
 
     @Override
-    public synchronized PLDData readBytes(byte[] bytes)
+    public PLDData readBytes(byte[] bytes)
     {
         byte[] keyBytes = new byte[8];
         System.arraycopy(bytes, 0, keyBytes, 0, 8);

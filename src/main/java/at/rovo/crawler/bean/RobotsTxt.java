@@ -13,19 +13,30 @@ import java.util.Set;
 public class RobotsTxt
 {
     /**
-     * A map holding
+     * A map holding the found user agents within the robots.txt file as key and a {@link RobotsTxtRecord} entry as
+     * value which will contain the settings for the respective user agent
      */
-    public Map<String, RobotsTxtRecord> records = new LinkedHashMap<>();
+    private Map<String, RobotsTxtRecord> records = new LinkedHashMap<>();
 
+    /**
+     * Initializes a new instance which parses the provided <em>robotsTxt</em> representation which can be retrieved
+     * after finalization via {@link #getRecords()}.
+     *
+     * @param robotsTxt The robots.txt String representation to parse
+     */
     public RobotsTxt(String robotsTxt)
     {
         parseRobotsTxt(robotsTxt);
     }
 
+    /**
+     * This class holds the parsed record information for a specific user agent.
+     */
     public class RobotsTxtRecord
     {
-        /** The default crawl delay **/
-        public final static int DEFAULT_CRAWL_DELAY = 0;
+        /** The default crawl delay does not specify any wait time and thus allows for immediate re-crawls **/
+        final static int DEFAULT_CRAWL_DELAY = 0;
+
         /** Specifies the targeted user-agent for this section **/
         private final String userAgent;
         /** Contains the allowed path-segments for the user-agent of this section **/
@@ -131,19 +142,19 @@ public class RobotsTxt
                     while (scanner.hasNextLine())
                     {
                         line = scanner.nextLine();
-                        // as comments are possible at the end of the line,
-                        // filter them out
+                        String lowerLine = line.toLowerCase();
+                        // as comments are possible at the end of the line, filter them out
                         if (line.contains("#"))
                         {
                             line = line.substring(0, line.indexOf("#")).trim();
                         }
 
-                        if (line.toLowerCase().startsWith("allow: "))
+                        if (lowerLine.startsWith("allow: "))
                         {
                             String allow = line.substring("allow:".length()).trim();
                             record.addAllowedPathSegment(allow);
                         }
-                        else if (line.toLowerCase().startsWith("disallow: "))
+                        else if (lowerLine.startsWith("disallow: "))
                         {
                             String disallow = line.substring("disallow:".length()).trim();
                             if ("".equals(disallow))
@@ -153,7 +164,7 @@ public class RobotsTxt
                             }
                             record.addDisallowedPathSegment(disallow);
                         }
-                        else if (line.toLowerCase().startsWith("crawl-delay: "))
+                        else if (lowerLine.startsWith("crawl-delay: "))
                         {
                             String crawlDelay = line.substring("crawl-delay:".length()).trim();
                             try
@@ -166,7 +177,7 @@ public class RobotsTxt
                                 record.setCrawlDelay(1);
                             }
                         }
-                        else if (line.toLowerCase().startsWith("sitemap"))
+                        else if (lowerLine.startsWith("sitemap"))
                         {
                             String sitemap = line.substring("sitemap: ".length()).trim();
                             record.addSitemap(sitemap);

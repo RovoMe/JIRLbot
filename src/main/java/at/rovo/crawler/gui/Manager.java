@@ -1,6 +1,6 @@
 package at.rovo.crawler.gui;
 
-import at.rovo.caching.drum.event.DrumEvent;
+import at.rovo.drum.event.DrumEvent;
 import at.rovo.crawler.IRLbot;
 import at.rovo.crawler.gui.events.BEASTEventListener;
 import at.rovo.crawler.gui.events.IRLbotCreationListener;

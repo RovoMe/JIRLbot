@@ -1,5 +1,6 @@
 package at.rovo.test;
 
+import at.rovo.common.UnitTest;
 import at.rovo.crawler.util.DelayedCrawlUrl;
 import at.rovo.crawler.util.IRLbotUtils;
 import de.jkeylockmanager.manager.KeyLockManager;
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -30,7 +32,7 @@ import static org.junit.Assert.assertThat;
  * This unit test tests the functionality of the delayed queue in combination with requeueing if the time did not yet
  * exceed
  */
-@SuppressWarnings("NullableProblems")
+@Category(UnitTest.class)
 public class DelayedUrlTest
 {
     private final static Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());

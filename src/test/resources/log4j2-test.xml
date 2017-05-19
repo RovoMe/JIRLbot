@@ -65,13 +65,13 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
         </logger>
 
         <!-- Test classes -->
-        <logger name="at.rovo.test.RobotsCacheTest" level="info" additivity="false">
+        <logger name="at.rovo.crawler.RobotsCacheTest" level="info" additivity="false">
+            <appender-ref ref="Console"/>
+        </logger>
+        <logger name="at.rovo.crawler.STARTest" level="debug" additivity="false">
             <appender-ref ref="TestFile"/>
         </logger>
-        <logger name="at.rovo.test.STARTest" level="debug" additivity="false">
-            <appender-ref ref="TestFile"/>
-        </logger>
-        <logger name="at.rovo.test.CacheAppendUpdateTest" level="debug" additivity="false">
+        <logger name="at.rovo.caching.drum.internal.backend.dataStore.DataStoreAppendUpdateTest" level="debug" additivity="false">
             <appender-ref ref="TestFile"/>
         </logger>
 
@@ -80,7 +80,7 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
             <appender-ref ref="TestFile"/>
         </logger>
 
-        <logger name="at.rovo.caching.drum.internal.backend.cacheFile.CacheFile" level="trace" additivity="false">
+        <logger name="at.rovo.caching.drum.internal.backend.dataStore.DataStoreImpl" level="trace" additivity="false">
             <appender-ref ref="DRUMFile"/>
         </logger>
 

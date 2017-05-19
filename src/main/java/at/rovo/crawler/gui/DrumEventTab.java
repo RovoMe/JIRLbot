@@ -1,11 +1,11 @@
 package at.rovo.crawler.gui;
 
-import at.rovo.caching.drum.event.DiskWriterEvent;
-import at.rovo.caching.drum.event.DiskWriterStateUpdate;
-import at.rovo.caching.drum.event.DrumEvent;
-import at.rovo.caching.drum.event.InMemoryBufferEvent;
-import at.rovo.caching.drum.event.InMemoryBufferStateUpdate;
-import at.rovo.caching.drum.event.MergerStateUpdate;
+import at.rovo.drum.event.DiskWriterEvent;
+import at.rovo.drum.event.DiskWriterStateUpdate;
+import at.rovo.drum.event.DrumEvent;
+import at.rovo.drum.event.InMemoryBufferEvent;
+import at.rovo.drum.event.InMemoryBufferStateUpdate;
+import at.rovo.drum.event.MergerStateUpdate;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -284,13 +284,13 @@ public class DrumEventTab extends JPanel
                 case EMPTY:
                     this.bucketFile[bucketId].setBackground(Color.WHITE);
                     break;
-                case WAITING_ON_DATA:
+                case WAITING_FOR_DATA:
                     this.bucketFile[bucketId].setBackground(Color.YELLOW);
                     break;
                 case DATA_RECEIVED:
                     this.bucketFile[bucketId].setBackground(Color.CYAN);
                     break;
-                case WAITING_ON_LOCK:
+                case WAITING_FOR_LOCK:
                     this.bucketFile[bucketId].setBackground(Color.ORANGE);
                     break;
                 case WRITING:
@@ -315,7 +315,7 @@ public class DrumEventTab extends JPanel
             {
                 switch (stateUpdate.getState())
                 {
-                    case WAITING_ON_MERGE_REQUEST:
+                    case WAITING_FOR_MERGE_REQUEST:
                         this.mainMerger.setBackground(Color.YELLOW);
                         this.mainMerger.setText("Waiting on merge request");
                         this.statusBarMainMergerLabel.setText("Main-Thread merger: Waiting on merge request");
@@ -325,7 +325,7 @@ public class DrumEventTab extends JPanel
                         this.mainMerger.setText("Merge requested");
                         this.statusBarMainMergerLabel.setText("Main-Thread merger: Merge requested");
                         break;
-                    case WAITING_ON_LOCK:
+                    case WAITING_FOR_LOCK:
                         this.mainMerger.setBackground(Color.ORANGE);
                         this.mainMerger.setText("Waiting on Lock of bucket writer " + stateUpdate.getBucketId());
                         this.statusBarMainMergerLabel.setText(
@@ -361,7 +361,7 @@ public class DrumEventTab extends JPanel
             {
                 switch (stateUpdate.getState())
                 {
-                    case WAITING_ON_MERGE_REQUEST:
+                    case WAITING_FOR_MERGE_REQUEST:
                         this.merger.setBackground(Color.YELLOW);
                         this.merger.setText("Waiting on merge request");
                         this.statusBarMergerLabel.setText("Merger thread: Waiting on merge request");
@@ -371,7 +371,7 @@ public class DrumEventTab extends JPanel
                         this.merger.setText("Merge requested");
                         this.statusBarMergerLabel.setText("Merger thread: Merge requested");
                         break;
-                    case WAITING_ON_LOCK:
+                    case WAITING_FOR_LOCK:
                         this.merger.setBackground(Color.ORANGE);
                         this.merger.setText("Waiting on Lock of bucket writer " + stateUpdate.getBucketId());
                         this.statusBarMergerLabel.setText(

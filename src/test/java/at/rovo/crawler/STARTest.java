@@ -1,9 +1,9 @@
-package at.rovo.test;
+package at.rovo.crawler;
 
-import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumListener;
-import at.rovo.caching.drum.event.DrumEvent;
-import at.rovo.crawler.STAR;
+import at.rovo.drum.DrumException;
+import at.rovo.drum.DrumListener;
+import at.rovo.drum.event.DrumEvent;
+import at.rovo.drum.utils.BaseDataStoreTest;
 import at.rovo.crawler.bean.PLDData;
 import at.rovo.crawler.interfaces.CheckSpamUrlListener;
 import at.rovo.crawler.util.IRLbotUtils;
@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class STARTest extends BaseCacheTest implements DrumListener, CheckSpamUrlListener
+public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSpamUrlListener
 {
     private final static Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -176,8 +176,6 @@ public class STARTest extends BaseCacheTest implements DrumListener, CheckSpamUr
             {
                 LOG.catching(e);
             }
-
-            //			this.star.dispose();
 
             Set<PLDData> pldData = this.star.getTopNSet();
             List<PLDData> pldList = new ArrayList<>();

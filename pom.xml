@@ -36,7 +36,17 @@
         <!-- DRUM -->
         <dependency>
             <groupId>at.rovo</groupId>
-            <artifactId>Drum</artifactId>
+            <artifactId>jdrum-commons</artifactId>
+            <version>${drum.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>jdrum-datastore-berkeley</artifactId>
+            <version>${drum.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>jdrum</artifactId>
             <version>${drum.version}</version>
         </dependency>
         <!-- Seaglass Look and Feel -->
@@ -61,6 +71,29 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
+        </dependency>
+        <!-- -->
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>Common</artifactId>
+            <version>${commons.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <!-- DRUM -->
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>jdrum-datastore-simple</artifactId>
+            <version>${drum.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>at.rovo</groupId>
+            <artifactId>jdrum</artifactId>
+            <version>${drum.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
         </dependency>
     </dependencies>
 

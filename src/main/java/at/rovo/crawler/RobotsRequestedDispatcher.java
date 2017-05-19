@@ -1,7 +1,6 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.NullDispatcher;
-import at.rovo.caching.drum.data.StringSerializer;
+import at.rovo.drum.NullDispatcher;
 import at.rovo.crawler.bean.HostData;
 import at.rovo.crawler.interfaces.RobotsRequestedListener;
 import java.util.Set;
@@ -14,8 +13,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * This class does actually not execute the download of the <em>robots.txt</em> file but informs any registered
  * listening objects that this file should get downloaded.
  */
-@SuppressWarnings("unused")
-public final class RobotsRequestedDispatcher extends NullDispatcher<HostData, StringSerializer>
+public final class RobotsRequestedDispatcher extends NullDispatcher<HostData, String>
 {
     /**
      * Contains all objects that registered interest if a <em>robots.txt</em> file is eligible for download
@@ -58,8 +56,8 @@ public final class RobotsRequestedDispatcher extends NullDispatcher<HostData, St
      * Informs any registered listening objects that the robots.txt for the given host is eligible for download.
      */
     @Override
-    public void uniqueKeyUpdate(Long key, HostData hostData, StringSerializer hostName)
+    public void uniqueKeyUpdate(Long key, HostData hostData, String hostName)
     {
-        this.listeners.forEach(listener -> listener.handleRobotsTxtDownloadRequests(hostName.getData()));
+        this.listeners.forEach(listener -> listener.handleRobotsTxtDownloadRequests(hostName));
     }
 }

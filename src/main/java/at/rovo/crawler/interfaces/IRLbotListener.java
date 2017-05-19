@@ -1,6 +1,6 @@
 package at.rovo.crawler.interfaces;
 
-import at.rovo.caching.drum.event.DrumEvent;
+import at.rovo.drum.event.DrumEvent;
 
 /**
  * The listener interface for notifications on the change of some crawling statistics. The class that is interested in

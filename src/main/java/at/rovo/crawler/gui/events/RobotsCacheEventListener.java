@@ -1,6 +1,6 @@
 package at.rovo.crawler.gui.events;
 
-import at.rovo.caching.drum.event.DrumEvent;
+import at.rovo.drum.event.DrumEvent;
 
 public interface RobotsCacheEventListener
 {

@@ -1,10 +1,10 @@
 package at.rovo.crawler.bean;
 
-import at.rovo.caching.drum.data.ByteSerializer;
-import at.rovo.caching.drum.util.DrumUtils;
 
-@SuppressWarnings("unused")
-public class HostData implements ByteSerializer<HostData>
+import at.rovo.drum.data.ByteSerializable;
+import at.rovo.drum.util.DrumUtils;
+
+public class HostData implements ByteSerializable<HostData>
 {
     private String robotsTxt = null;
     private String ipAddress = null;
@@ -21,30 +21,6 @@ public class HostData implements ByteSerializer<HostData>
         this.robotsTxt = robotsTxt;
         this.ipAddress = ipAddress;
         this.hostName = hostName;
-    }
-
-    public void setHostName(String hostName)
-    {
-        this.hostName = hostName;
-    }
-
-    public void setRobotsTxt(String robotsTxt)
-    {
-        this.robotsTxt = robotsTxt;
-    }
-
-    public void setIPAddress(String ipAddress)
-    {
-        this.ipAddress = ipAddress;
-    }
-
-    public void setIPAddressAsString(String ipAddress)
-    {
-        this.ipAddress = ipAddress;
-    }
-
-    public void setCrawlDelay(long delay) {
-        this.crawlDelay = delay;
     }
 
     public String getHostName()
@@ -66,10 +42,62 @@ public class HostData implements ByteSerializer<HostData>
         return this.crawlDelay;
     }
 
-    @Override
-    public String toString()
+    public void setCrawlDelay(long delay) {
+        this.crawlDelay = delay;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException
     {
-        return this.hostName;
+        // 4 bytes int - size of hostName
+        stream.writeInt(this.hostName.length());
+        // n bytes char[] - hostName
+        stream.write(this.hostName.getBytes());
+        // 4 bytes int - size of ipAddress
+        stream.writeInt(null != this.ipAddress ? this.ipAddress.length() : 0);
+        if (null != this.ipAddress)
+        {
+            // (n bytes char[] - ipAddress; IPv4 or IPv6)
+            stream.write(this.ipAddress.getBytes());
+        }
+        // 4 bytes int - size of robotsTxt
+        stream.writeInt(null != this.robotsTxt ? this.robotsTxt.length() : 0);
+        if (null != this.robotsTxt)
+        {
+            // (n bytes char[] - robotsTxt)
+            stream.write(this.robotsTxt.getBytes());
+        }
+    }
+
+    private void readObject(java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException
+    {
+        // read hostName length
+        int hostSize = stream.readInt();
+        // read hostName
+        byte[] hostNameBytes = new byte[hostSize];
+        stream.readFully(hostNameBytes);
+        String hostName = new String(hostNameBytes);
+
+        // read ipAddress length
+        int ipSize = stream.readInt();
+        // read ipAddress
+        byte[] ipAddressBytes = new byte[ipSize];
+        stream.readFully(ipAddressBytes);
+        String ipAddress = new String(ipAddressBytes);
+
+        // read robots.txt length
+        int robotsSize = stream.readInt();
+        // read robots.txt
+        String robotsTxt = null;
+        if (robotsSize > 0)
+        {
+            byte[] robotsBytes = new byte[robotsSize];
+            stream.readFully(robotsBytes);
+            robotsTxt = new String(robotsBytes);
+        }
+
+        this.hostName = hostName;
+        this.ipAddress = ipAddress;
+        this.robotsTxt = robotsTxt;
     }
 
     @Override
@@ -131,10 +159,12 @@ public class HostData implements ByteSerializer<HostData>
             robotsTxt = new String(robotsBytes);
         }
         // create a new object with the deserialized data
-        HostData host = new HostData();
-        host.setHostName(hostName);
-        host.setRobotsTxt(robotsTxt);
+        return new HostData(hostName, ipAddress, robotsTxt);
+    }
 
-        return host;
+    @Override
+    public String toString()
+    {
+        return this.hostName;
     }
 }

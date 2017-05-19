@@ -39,9 +39,7 @@ public final class BEAST
     private List<Queue<Pair<String, Integer>>> queues = null;
     /** The left-over budgets for each pay level domain per queue **/
     private Map<Queue<Pair<String, Integer>>, Map<String, Integer>> pldBudgets = null;
-    /**
-     * The queue currently read from. Note that new entries are stored within the other n-1 queues
-     **/
+    /** The queue currently read from. Note that new entries are stored within the other n-1 queues **/
     private Queue<Pair<String, Integer>> currentQueue = null;
     /** This queue will take all URLs that did not fit into any other queue **/
     private Queue<Pair<String, Integer>> leftOverQueue = null;
@@ -70,8 +68,7 @@ public final class BEAST
         this.queues.add(this.currentQueue);
         Queue<Pair<String, Integer>> queue = new LinkedList<>();
         this.queues.add(queue);
-        // Adding queues and the mapping of PLD with their
-        // left-over budget for each queue to the budget map
+        // Adding queues and the mapping of PLD with their left-over budget for each queue to the budget map
         this.pldBudgets.put(this.currentQueue, new HashMap<>());
         this.pldBudgets.put(queue, new HashMap<>());
 
@@ -130,18 +127,15 @@ public final class BEAST
     public void checkBudgetOfURL(String url, int budget)
     {
         String PLD = IRLbotUtils.getPLDofURL(url);
-        // for a given domain x with budget Bx, the first Bx URLs
-        // are sent into Q2, the next into Q3 and so on
-        // this means if there are 4 queues and the budget of a
-        // URL is f.e. 10 - every queue has a limit of 10 URLs
+        // for a given domain x with budget Bx, the first Bx URLs are sent into Q2, the next into Q3 and so on
+        // this means if there are 4 queues and the budget of a URL is f.e. 10 - every queue has a limit of 10 URLs
         boolean found = false;
 
         synchronized (this.syncObj)
         {
             for (int i = 0; i < this.queues.size(); i++)
             {
-                // this will add the recently emptied queue to the back
-                // of the list while adding values
+                // this will add the recently emptied queue to the back of the list while adding values
                 int j = i + this.currentQueueNumber + 1;
                 if (j >= this.queues.size())
                 {
@@ -160,8 +154,8 @@ public final class BEAST
                     {
                         queueBudget = 0;
                     }
-                    LOG.debug("current queue id: {} | j: {} | budget: {} | queueBudget: {}", this.currentQueueNumber, j,
-                              budget, queueBudget);
+                    LOG.debug("current queue id: {} | j: {} | budget: {} | queueBudget: {}",
+                              this.currentQueueNumber, j, budget, queueBudget);
                     if (queueBudget < budget)
                     {
                         this.queues.get(j).add(new Pair<>(url, budget));
@@ -176,14 +170,13 @@ public final class BEAST
                             this.pldBudgets.get(this.queues.get(j)).put(PLD, queueBudget++);
                         }
                         found = true;
-                        LOG.debug("Adding {} to queue {} which had available {} slot(s)", url, j,
-                                  (budget - queueBudget));
+                        LOG.debug("Adding {} to queue {} which had available {} slot(s)",
+                                  url, j, (budget - queueBudget));
                         break;
                     }
                 }
             }
-            // ... if all 40 places are used the remaining URLs of
-            // this PLD are sent to the leftOverQueue
+            // ... if all 40 places are used the remaining URLs of this PLD are sent to the leftOverQueue
             if (!found)
             {
                 this.leftOverQueue.add(new Pair<>(url, budget));

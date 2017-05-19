@@ -1,12 +1,12 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.Dispatcher;
-import at.rovo.caching.drum.Drum;
-import at.rovo.caching.drum.DrumBuilder;
-import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumListener;
-import at.rovo.caching.drum.data.StringSerializer;
-import at.rovo.caching.drum.util.DrumUtils;
+import at.rovo.drum.Dispatcher;
+import at.rovo.drum.Drum;
+import at.rovo.drum.DrumBuilder;
+import at.rovo.drum.DrumException;
+import at.rovo.drum.DrumListener;
+import at.rovo.drum.berkeley.BerkeleyDBStoreMerger;
+import at.rovo.drum.util.DrumUtils;
 import at.rovo.crawler.bean.HostData;
 import at.rovo.crawler.util.IRLbotUtils;
 import org.apache.logging.log4j.LogManager;
@@ -24,16 +24,20 @@ public final class RobotsCache
     private final static Logger LOG = LogManager.getLogger(IRLbot.class);
 
     private int numBuckets = 0;
-    private Drum<HostData, StringSerializer> drum = null;
+    private Drum<HostData, String> drum = null;
 
-    public RobotsCache(String name, Dispatcher<HostData, StringSerializer> dispatcher, int numBuckets,
+    public RobotsCache(String name, Dispatcher<HostData, String> dispatcher, int numBuckets,
                        int bucketByteSize) throws DrumException
     {
         this.numBuckets = numBuckets;
         try
         {
-            this.drum = new DrumBuilder<>(name, HostData.class, StringSerializer.class).numBucket(numBuckets)
-                    .bufferSize(bucketByteSize).dispatcher(dispatcher).build();
+            this.drum = new DrumBuilder<>(name, HostData.class, String.class)
+                    .numBucket(numBuckets)
+                    .bufferSize(bucketByteSize)
+                    .dispatcher(dispatcher)
+                    .datastore(BerkeleyDBStoreMerger.class)
+                    .build();
         }
         catch (Exception e)
         {
@@ -41,14 +45,19 @@ public final class RobotsCache
         }
     }
 
-    public RobotsCache(Dispatcher<HostData, StringSerializer> dispatcher, int numBuckets, int bucketByteSize,
+    public RobotsCache(Dispatcher<HostData, String> dispatcher, int numBuckets, int bucketByteSize,
                        DrumListener listener) throws DrumException
     {
         this.numBuckets = numBuckets;
         try
         {
-            this.drum = new DrumBuilder<>("robotsCache", HostData.class, StringSerializer.class).numBucket(numBuckets)
-                    .bufferSize(bucketByteSize).dispatcher(dispatcher).listener(listener).build();
+            this.drum = new DrumBuilder<>("robotsCache", HostData.class, String.class)
+                    .numBucket(numBuckets)
+                    .bufferSize(bucketByteSize)
+                    .dispatcher(dispatcher)
+                    .listener(listener)
+                    .datastore(BerkeleyDBStoreMerger.class)
+                    .build();
         }
         catch (Exception e)
         {
@@ -59,7 +68,7 @@ public final class RobotsCache
     public void check(String url)
     {
         LOG.debug("Checking URL {} for robots.txt compliance on host: {}", url, IRLbotUtils.getHostname(url));
-        this.drum.check(DrumUtils.hash(IRLbotUtils.getHostname(url)), new StringSerializer(url));
+        this.drum.check(DrumUtils.hash(IRLbotUtils.getHostname(url)), url);
     }
 
     public void update(Long key, HostData hostData)

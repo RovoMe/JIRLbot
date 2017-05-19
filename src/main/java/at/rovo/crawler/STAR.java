@@ -1,16 +1,16 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.Drum;
-import at.rovo.caching.drum.DrumBuilder;
-import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumListener;
-import at.rovo.caching.drum.NullDispatcher;
-import at.rovo.caching.drum.data.StringSerializer;
-import at.rovo.caching.drum.util.DrumUtils;
 import at.rovo.crawler.bean.PLDData;
 import at.rovo.crawler.interfaces.CheckSpamUrlListener;
 import at.rovo.crawler.util.IRLbotUtils;
 import at.rovo.crawler.util.PLDComparator;
+import at.rovo.drum.Drum;
+import at.rovo.drum.DrumBuilder;
+import at.rovo.drum.DrumException;
+import at.rovo.drum.DrumListener;
+import at.rovo.drum.NullDispatcher;
+import at.rovo.drum.berkeley.BerkeleyDBStoreMerger;
+import at.rovo.drum.util.DrumUtils;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -33,14 +33,13 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Roman Vottner
  */
-@SuppressWarnings("unused")
-public final class STAR extends NullDispatcher<PLDData, StringSerializer>
+public final class STAR extends NullDispatcher<PLDData, String>
 {
     /** The logger of this class **/
     private final static Logger LOG = LogManager.getLogger(STAR.class);
 
     /** The DRUM object managing the update and unique/duplicate checking **/
-    private Drum<PLDData, StringSerializer> drum = null;
+    private Drum<PLDData, String> drum = null;
     /** The registered listeners **/
     private Set<CheckSpamUrlListener> listeners = null;
     /** The number of buckets used by the STAR structure **/
@@ -65,29 +64,6 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
     private int topN = 10000;
 
     /**
-     * Initializes a new instance of STAR structure with basic values. This constructor sets the number of buckets to
-     * 1024 and the size of the bucket before the data is written to disk file or merged with the backing data store to
-     * 64k bytes.
-     *
-     * @throws DrumException
-     *         If any exception during the initialization of the backing DRUM cache occurs
-     */
-    public STAR() throws DrumException
-    {
-        this.numBuckets = 1024;
-        try
-        {
-            this.drum = new DrumBuilder<>("pldIndegree", PLDData.class, StringSerializer.class).numBucket(1024)
-                    .bufferSize(65536).dispatcher(this).build();
-        }
-        catch (Exception e)
-        {
-            throw new DrumException(e.getLocalizedMessage(), e);
-        }
-        this.listeners = new CopyOnWriteArraySet<>();
-    }
-
-    /**
      * Initializes a new instance of STAR structure with required values.
      *
      * @param numBuckets
@@ -105,8 +81,13 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
         this.numBuckets = numBuckets;
         try
         {
-            this.drum = new DrumBuilder<>("pldIndegree", PLDData.class, StringSerializer.class).numBucket(numBuckets)
-                    .bufferSize(bucketByteSize).dispatcher(this).listener(listener).build();
+            this.drum = new DrumBuilder<>("pldIndegree", PLDData.class, String.class)
+                    .numBucket(numBuckets)
+                    .bufferSize(bucketByteSize)
+                    .dispatcher(this)
+                    .listener(listener)
+                    .datastore(BerkeleyDBStoreMerger.class)
+                    .build();
         }
         catch (Exception e)
         {
@@ -241,12 +222,12 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
      * <p>
      * This method will check if an entry of the URLs pay level domain exists already in the local in memory cache and
      * redirects the request to the backing DRUM cache if not. In case the entry was found within DRUM {@link
-     * #duplicateKeyCheck(Long, PLDData, StringSerializer)} will be invoked by the backing DRUM cache.
+     * #duplicateKeyCheck(Long, PLDData, String)} will be invoked by the backing DRUM cache.
      *
      * @param url
      *         The auxiliary data object representing the URL to check
      *
-     * @see {@link #duplicateKeyCheck(Long, PLDData, StringSerializer)}
+     * @see #duplicateKeyCheck(Long, PLDData, String)
      */
     public void check(String url)
     {
@@ -273,7 +254,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
             // was already a PLD entry for this URL the duplicateKeyCheck
             // method will be invoked by the dispatcher
             LOG.debug("Checking {} ({}) for {} against backing DRUM cache", pld, key, url);
-            this.drum.check(key, new StringSerializer(url));
+            this.drum.check(key, url);
         }
     }
 
@@ -330,11 +311,11 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
      *         The actual URL the check was executed for
      */
     @Override
-    public void duplicateKeyCheck(Long key, PLDData data, StringSerializer url)
+    public void duplicateKeyCheck(Long key, PLDData data, String url)
     {
-        LOG.debug("Backing DRUM already contained data for PLD {} ({}) - budget is {}", url.getData(), key,
+        LOG.debug("Backing DRUM already contained data for PLD {} ({}) - budget is {}", url, key,
                   data.getBudget());
-        this.listeners.forEach(listener -> listener.handleSpamCheck(url.getData(), data.getBudget()));
+        this.listeners.forEach(listener -> listener.handleSpamCheck(url, data.getBudget()));
 
         if (LOG.isDebugEnabled())
         {
@@ -343,9 +324,9 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
     }
 
     @Override
-    public void uniqueKeyCheck(Long key, StringSerializer pld)
+    public void uniqueKeyCheck(Long key, String pld)
     {
-        LOG.warn("PLD {} ({}) not found within backing DRUM!", pld.getData(), key);
+        LOG.warn("PLD {} ({}) not found within backing DRUM!", pld, key);
     }
 
     /**
@@ -365,6 +346,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
      */
     public void update(String origin, Set<String> plds)
     {
+        // FIXME: this code is run by pldIndegree-Merger. Need to untangle this in order for the merger to merge and not to do the whole update stuff!
         // crawling threads aggregate PLD-PLD link information and send it to a
         // DRUM structure. PLDindegree uses a batch update to store for each
         // PLD x its hash hx, in-degree dx, current budget Bx, and hashes of
@@ -386,7 +368,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
             // by default every PLD has a budget of 10. If the domain is linked
             // more often the budget will increase
             data.setBudget(this.minBudget);
-            this.drum.appendUpdate(hashPld, data, new StringSerializer(pld));
+            this.drum.appendUpdate(hashPld, data, pld);
             LOG.trace("DRUM instance invoked");
         }
     }
@@ -405,15 +387,15 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
      *         The actual pay level domain the update was executed for
      */
     @Override
-    public void update(Long key, PLDData data, StringSerializer pld)
+    public void update(Long key, PLDData data, String pld)
     {
         if (null == pld)
         {
             throw new IllegalArgumentException(
                     "PLD was null! It seems no auxiliary PLD data was provided upon calling DRUMs update operation");
         }
-        LOG.debug("Receiving update for PLD {} ({}) - data: {}", pld.getData(), key, data);
-        data.setPLD(pld.getData());
+        LOG.debug("Receiving update for PLD {} ({}) - data: {}", pld, key, data);
+        data.setPLD(pld);
 
         // as adding an already stored element in the top set leaves the set
         // unchanged and ConcurrentSkipListSet lacks a method to replace an
@@ -454,7 +436,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
                 if (remData.getBudget() > this.minBudget)
                 {
                     remData.setBudget(this.minBudget);
-                    this.drum.update(remData.getHash(), remData, new StringSerializer(remData.getPLD()));
+                    this.drum.update(remData.getHash(), remData, remData.getPLD());
                 }
             }
         }
@@ -498,7 +480,8 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
                 LOG.debug(
                         "Recalculated Budget for PLD {} ({}) with a budget of {} - previous set contained {}/{} at this position - current budget {}",
                         top.getPLD(), top.getHash(), top.getBudget(), comp.getHash(), comp.getPLD(), curBudget);
-                this.drum.update(top.getHash(), top, new StringSerializer(top.getPLD()));
+                // FIXME: all this code is executed by the merger thread of pldIndegree-Merger!
+                this.drum.update(top.getHash(), top, top.getPLD());
             }
         }
         // check if the topSet has expanded in comparison to the last call
@@ -508,7 +491,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
             top.setBudget(this.calculateBudget(top.getIndegree()));
             LOG.debug("Recalculated Budget for PLD {} ({}) with a budget of {} - current budget {}", top.getPLD(),
                       top.getHash(), top.getBudget(), curBudget);
-            this.drum.update(top.getHash(), top, new StringSerializer(top.getPLD()));
+            this.drum.update(top.getHash(), top, top.getPLD());
         }
         // should not happen as the list should not get less than 25 - just in
         // case is might happen for some reason set the budget of those PLDs
@@ -519,7 +502,7 @@ public final class STAR extends NullDispatcher<PLDData, StringSerializer>
             comp.setBudget(this.minBudget);
             LOG.warn("Setting Budget for PLD {} ({}) to the minimum budget of {}", comp.getPLD(), comp.getHash(),
                      this.minBudget);
-            this.drum.update(comp.getHash(), comp, new StringSerializer(comp.getPLD()));
+            this.drum.update(comp.getHash(), comp, comp.getPLD());
         }
 
         if (LOG.isTraceEnabled())

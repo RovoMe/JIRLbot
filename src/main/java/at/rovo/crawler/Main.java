@@ -14,7 +14,6 @@ public class Main implements Runnable
 {
     /** The logger of this class **/
     private final static Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
-//  private static Logger LOG;
 
     private List<String> lookAndFeels = Arrays.asList(
             //"com.seaglasslookandfeel.SeaGlassLookAndFeel",        // SeaGlass has issues on Mac OS X
@@ -53,7 +52,6 @@ public class Main implements Runnable
                 System.out.println("\t-laf or --lookandfeel\tSpecifies the preferred look and feel to use");
             }
         }
-//        initLogger();
         SwingUtilities.invokeLater(new Main(lookAndFeel));
     }
 

@@ -45,32 +45,33 @@ http://logging.apache.org/log4j/2.x/manual/layouts.html
     </appenders>
 
     <loggers>
-        <logger name="at.rovo.crawler.IRLbot" level="error" additivity="false">
+        <logger name="at.rovo.crawler.IRLbot" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.CrawlingThread" level="error" additivity="false">
+        <logger name="at.rovo.crawler.CrawlingThread" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.UniqueUrlDispatcher" level="error" additivity="false">
+        <logger name="at.rovo.crawler.UniqueUrlDispatcher" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.STAR" level="error" additivity="false">
+        <logger name="at.rovo.crawler.STAR" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.BEAST" level="error" additivity="false">
+        <logger name="at.rovo.crawler.BEAST" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.RobotsCache" level="error" additivity="false">
+        <logger name="at.rovo.crawler.RobotsCache" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.RobotsRequested" level="error" additivity="false">
+        <logger name="at.rovo.crawler.RobotsRequested" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
-        <logger name="at.rovo.crawler.RobotsCacheDispatcher" level="error" additivity="false">
+        <logger name="at.rovo.crawler.RobotsCacheDispatcher" level="info" additivity="false">
             <appender-ref ref="CrawlerFile"/>
         </logger>
 
-        <logger name="at.rovo.caching.drum" level="error" additivity="false">
+        <logger name="at.rovo.caching.drum" level="warn" additivity="false">
+            <appender-ref ref="Console"/>
             <appender-ref ref="DRUMFile"/>
         </logger>
 

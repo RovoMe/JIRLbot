@@ -1,7 +1,6 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.NullDispatcher;
-import at.rovo.caching.drum.data.StringSerializer;
+import at.rovo.drum.NullDispatcher;
 import at.rovo.crawler.bean.HostData;
 import at.rovo.crawler.bean.RobotsTxt;
 import at.rovo.crawler.interfaces.RobotsCachePassedListener;
@@ -17,8 +16,7 @@ import org.apache.logging.log4j.Logger;
  * In case of an available <em>robots.txt</em> the file is parsed and a decision is made based on the entries in the
  * <em>robots.txt</em> if the URL to check is allowed to proceed or not.
  */
-@SuppressWarnings("unused")
-public final class RobotsCacheDispatcher extends NullDispatcher<HostData, StringSerializer>
+public final class RobotsCacheDispatcher extends NullDispatcher<HostData, String>
 {
     /** The logger of this class **/
     private final static Logger LOG = LogManager.getLogger(RobotsCacheDispatcher.class);
@@ -79,13 +77,13 @@ public final class RobotsCacheDispatcher extends NullDispatcher<HostData, String
      *         The URL which passed the check
      */
     @Override
-    public void duplicateKeyCheck(Long key, HostData hostData, StringSerializer url)
+    public void duplicateKeyCheck(Long key, HostData hostData, String url)
     {
         LOG.debug("Checking compliance with robots.txt rules: {}", url);
-        if (this.isAllowedToPass(url.getData(), hostData))
+        if (this.isAllowedToPass(url, hostData))
         {
             LOG.debug("URL passed tests!");
-            this.listeners.forEach(listener -> listener.handleURLsPassed(url.getData(), hostData));
+            this.listeners.forEach(listener -> listener.handleURLsPassed(url, hostData));
         }
     }
 
@@ -102,10 +100,10 @@ public final class RobotsCacheDispatcher extends NullDispatcher<HostData, String
      *         The URL which failed the check for an available <em>robots.txt</em> file
      */
     @Override
-    public void uniqueKeyCheck(Long key, StringSerializer url)
+    public void uniqueKeyCheck(Long key, String url)
     {
         LOG.debug("No robots.txt found for {} inside DRUM!", url);
-        this.listeners.forEach(listener -> listener.handleUnableToCheck(url.getData()));
+        this.listeners.forEach(listener -> listener.handleUnableToCheck(url));
     }
 
     /**

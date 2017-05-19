@@ -1,10 +1,12 @@
-package at.rovo.test;
+package at.rovo.crawler.util;
 
-import at.rovo.crawler.util.IRLbotUtils;
+import at.rovo.common.UnitTest;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-public class PLDExtractorTest
+@Category(UnitTest.class)
+public class IRLbotUtilsTest
 {
     @Test
     public void testPLDExtraction()

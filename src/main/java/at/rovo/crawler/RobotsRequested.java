@@ -1,12 +1,12 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.Dispatcher;
-import at.rovo.caching.drum.Drum;
-import at.rovo.caching.drum.DrumBuilder;
-import at.rovo.caching.drum.DrumException;
-import at.rovo.caching.drum.DrumListener;
-import at.rovo.caching.drum.data.StringSerializer;
-import at.rovo.caching.drum.util.DrumUtils;
+import at.rovo.drum.Dispatcher;
+import at.rovo.drum.Drum;
+import at.rovo.drum.DrumBuilder;
+import at.rovo.drum.DrumException;
+import at.rovo.drum.DrumListener;
+import at.rovo.drum.berkeley.BerkeleyDBStoreMerger;
+import at.rovo.drum.util.DrumUtils;
 import at.rovo.crawler.bean.HostData;
 
 /**
@@ -19,7 +19,7 @@ import at.rovo.crawler.bean.HostData;
 public final class RobotsRequested
 {
     /** The backing cache to be used **/
-    private Drum<HostData, StringSerializer> drum = null;
+    private Drum<HostData, String> drum = null;
     /** The number of bucket files the DRUM instance should handle **/
     private int numBuckets = 0;
 
@@ -40,15 +40,20 @@ public final class RobotsRequested
      * @throws DrumException
      *         Will be thrown if the backing <em>DRUM</em> instance could not get initialized
      */
-    public RobotsRequested(Dispatcher<HostData, StringSerializer> dispatcher, int numBuckets, int byteSize,
+    public RobotsRequested(Dispatcher<HostData, String> dispatcher, int numBuckets, int byteSize,
                            DrumListener listener) throws DrumException
     {
         this.numBuckets = numBuckets;
         try
         {
             this.drum =
-                    new DrumBuilder<>("robotsRequested", HostData.class, StringSerializer.class).numBucket(numBuckets)
-                            .bufferSize(byteSize).dispatcher(dispatcher).listener(listener).build();
+                    new DrumBuilder<>("robotsRequested", HostData.class, String.class)
+                            .numBucket(numBuckets)
+                            .bufferSize(byteSize)
+                            .dispatcher(dispatcher)
+                            .listener(listener)
+                            .datastore(BerkeleyDBStoreMerger.class)
+                            .build();
         }
         catch (Exception e)
         {
@@ -60,7 +65,7 @@ public final class RobotsRequested
      * Executes an asynchronous check for the existence of any open download requests for the given host.
      * <p>
      * The results of this request will be handled by {@link RobotsRequestedDispatcher#uniqueKeyUpdate(Long, HostData,
-     * StringSerializer)} in case no previous URL requested a download of a <em>robots.txt</em> file for this domain.
+     * String)} in case no previous URL requested a download of a <em>robots.txt</em> file for this domain.
      *
      * @param hostData
      *         The data object containing further host information like any existing <em>robots.txt</em> files, the IP
@@ -71,7 +76,7 @@ public final class RobotsRequested
     public void request(HostData hostData, String hostName)
     {
         // TODO: make clear why checkUpdate and not check - might be due to old robots.txt updates though
-        this.drum.checkUpdate(DrumUtils.hash(hostName), hostData, new StringSerializer(hostName));
+        this.drum.checkUpdate(DrumUtils.hash(hostName), hostData, hostName);
     }
 
     /**

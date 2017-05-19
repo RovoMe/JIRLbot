@@ -1,7 +1,6 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.NullDispatcher;
-import at.rovo.caching.drum.data.StringSerializer;
+import at.rovo.drum.NullDispatcher;
 import at.rovo.crawler.interfaces.UniqueUrlListener;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -11,8 +10,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Methods of this class are invoked by the backing DRUM instance
  */
-@SuppressWarnings("unused")
-public final class UniqueUrlDispatcher extends NullDispatcher<StringSerializer, StringSerializer>
+public final class UniqueUrlDispatcher extends NullDispatcher<String, String>
 {
     /** The logger of this class **/
     private final static Logger LOG = LogManager.getLogger(UniqueUrlDispatcher.class);
@@ -49,16 +47,16 @@ public final class UniqueUrlDispatcher extends NullDispatcher<StringSerializer, 
     }
 
     @Override
-    public void uniqueKeyCheck(Long key, StringSerializer url)
+    public void uniqueKeyCheck(Long key, String url)
     {
         LOG.debug("unique key check: {}", url);
-        this.listeners.forEach(listener -> listener.handleUniqueURL(url.getData()));
+        this.listeners.forEach(listener -> listener.handleUniqueURL(url));
     }
 
     @Override
-    public void uniqueKeyUpdate(Long key, StringSerializer value, StringSerializer url)
+    public void uniqueKeyUpdate(Long key, String data, String url)
     {
         LOG.debug("unique key update: {}", url);
-        this.listeners.forEach(listener -> listener.handleUniqueURL(url.getData()));
+        this.listeners.forEach(listener -> listener.handleUniqueURL(url));
     }
 }

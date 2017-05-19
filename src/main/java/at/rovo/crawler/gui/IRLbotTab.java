@@ -1,7 +1,7 @@
 package at.rovo.crawler.gui;
 
-import at.rovo.caching.drum.event.DrumEvent;
-import at.rovo.caching.drum.event.StorageEvent;
+import at.rovo.drum.event.DrumEvent;
+import at.rovo.drum.event.StorageEvent;
 import at.rovo.crawler.gui.events.IRLbotEventListener;
 import java.awt.BorderLayout;
 import javax.swing.BorderFactory;

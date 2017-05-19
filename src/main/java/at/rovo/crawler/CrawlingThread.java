@@ -1,9 +1,9 @@
 package at.rovo.crawler;
 
-import at.rovo.caching.drum.util.DrumUtils;
 import at.rovo.common.UrlReader;
 import at.rovo.crawler.bean.CrawledPage;
 import at.rovo.crawler.util.IRLbotUtils;
+import at.rovo.drum.util.DrumUtils;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
