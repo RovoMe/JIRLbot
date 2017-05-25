@@ -4,15 +4,15 @@ import at.rovo.common.UrlReader;
 import at.rovo.crawler.bean.CrawledPage;
 import at.rovo.crawler.util.IRLbotUtils;
 import at.rovo.drum.util.DrumUtils;
+import java.lang.invoke.MethodHandles;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is a worker object to read and parse a web page for further URLs in a concurrent way. It implements {@link
@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 public final class CrawlingThread implements Callable<CrawledPage>
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(CrawlingThread.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /** The absolute URL of a web page **/
     private String url = null;
@@ -128,9 +128,8 @@ public final class CrawlingThread implements Callable<CrawledPage>
             }
             catch (Exception e)
             {
-                LOG.error("Error extracting URLs from: {} - matcher: {}, validated to: {}! Reason: {}", this.url, _url,
-                          validURL, e.getLocalizedMessage());
-                LOG.catching(Level.ERROR, e);
+                LOG.error("Error extracting URLs from: " + this.url + " - matcher: " + _url
+                          + ", validated to: " + validURL + "! Reason: " + e.getLocalizedMessage(), e);
             }
         }
 

@@ -4,10 +4,11 @@ import at.rovo.drum.NullDispatcher;
 import at.rovo.crawler.bean.HostData;
 import at.rovo.crawler.bean.RobotsTxt;
 import at.rovo.crawler.interfaces.RobotsCachePassedListener;
+import java.lang.invoke.MethodHandles;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An instance of this class is invoked by the {@link RobotsCache} backing <em>DRUM</em> instance when it has finished
@@ -19,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 public final class RobotsCacheDispatcher extends NullDispatcher<HostData, String>
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(RobotsCacheDispatcher.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     /**
      * This list will hold all objects that requested to be informed if a certain robots.txt is available or not
      **/

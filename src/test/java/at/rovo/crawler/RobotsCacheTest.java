@@ -13,10 +13,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -53,7 +53,7 @@ import org.junit.Test;
  */
 public class RobotsCacheTest extends BaseDataStoreTest implements RobotsCachePassedListener
 {
-    private final static Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private RobotsCache robotsCache = null;
     private Set<String> urlsPassed = null;
@@ -127,7 +127,7 @@ public class RobotsCacheTest extends BaseDataStoreTest implements RobotsCachePas
         }
         catch (DrumException dEx)
         {
-            LOG.catching(dEx);
+            LOG.error(dEx.getLocalizedMessage(), dEx);
         }
         finally
         {
@@ -142,7 +142,7 @@ public class RobotsCacheTest extends BaseDataStoreTest implements RobotsCachePas
                 }
                 catch (DrumException e)
                 {
-                    LOG.catching(e);
+                    LOG.error(e.getLocalizedMessage(), e);
                 }
             }
             LOG.info("done!");

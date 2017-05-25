@@ -79,7 +79,7 @@ public abstract class DrumCacheLister<V extends Serializable, A extends Serializ
         }
 
         File[] kvFiles = cacheDir.listFiles(new kvFileFilter());
-        File[] auxFiles = cacheDir.listFiles(new auxFileFilter());
+        File[] auxFiles = cacheDir.listFiles(new AuxFileFilter());
 
         if (kvFiles.length != auxFiles.length)
         {
@@ -314,7 +314,7 @@ public abstract class DrumCacheLister<V extends Serializable, A extends Serializ
             File cacheDir = new File(appDir + "/cache/" + this.cache);
 
             File[] kvFiles = cacheDir.listFiles(new kvFileFilter());
-            File[] auxFiles = cacheDir.listFiles(new auxFileFilter());
+            File[] auxFiles = cacheDir.listFiles(new AuxFileFilter());
 
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getPathComponent(1);
             this.addBucketFileContent(node, kvFiles[id], auxFiles[id]);

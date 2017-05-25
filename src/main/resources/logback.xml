@@ -1,0 +1,61 @@
+<configuration>
+
+    <property name="pattern" value="%date{yyyy-MM-dd HH:mm:ss.SSS} [%-5p] [%-25.25thread{24}] %-40.40logger{39}: %msg %throwable %n"/>
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+     ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CrawlerFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>log/Crawler.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 5 days' worth of history -->
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="DrumFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>log/DRUM.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 5 days' worth of history -->
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS}  %-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="at.rovo.crawler" level="info" />
+
+    <logger name="at.rovo.crawler.IRLbot" level="info"/>
+    <logger name="at.rovo.crawler.CrawlingThread" level="info"/>
+    <logger name="at.rovo.crawler.UniqueUrlDispatcher" level="info"/>
+    <logger name="at.rovo.crawler.STAR" level="info"/>
+    <logger name="at.rovo.crawler.RobotsCache" level="info"/>
+    <logger name="at.rovo.crawler.RobotsRequested" level="info"/>
+    <logger name="at.rovo.crawler.RobotsCacheDispatcher" level="info"/>
+
+    <logger name="at.rovo.drum" level="warn">
+        <appender-ref ref="DrumFile"/>
+    </logger>
+
+    <root level="info" additivity="false">
+        <appender-ref ref="CrawlerFile"/>
+    </root>
+
+</configuration>

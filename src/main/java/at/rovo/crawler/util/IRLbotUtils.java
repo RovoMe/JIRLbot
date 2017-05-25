@@ -1,12 +1,12 @@
 package at.rovo.crawler.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IRLbotUtils
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(IRLbotUtils.class);
+    private final static Logger LOG = LoggerFactory.getLogger(IRLbotUtils.class);
 
     /**
      * Extracts the pay level domain from a URL
@@ -72,8 +72,7 @@ public class IRLbotUtils
         }
         catch (IndexOutOfBoundsException e)
         {
-            LOG.error("Error extracting PLD of url: {}", origin);
-            LOG.catching(e);
+            LOG.error("Error extracting PLD of url: " + origin, e);
             throw e;
         }
     }

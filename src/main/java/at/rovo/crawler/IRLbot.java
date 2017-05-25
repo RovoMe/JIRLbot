@@ -18,6 +18,7 @@ import at.rovo.drum.util.DrumUtils;
 import at.rovo.drum.util.NamedThreadFactory;
 import de.jkeylockmanager.manager.KeyLockManager;
 import de.jkeylockmanager.manager.KeyLockManagers;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,8 +37,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * IRLbot is the web crawler published by Lee, Leonard, Wang and Loguinov in their paper 'IRLbot: Scaling to 6 Billion
@@ -58,7 +59,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         RobotsCachePassedListener, RobotsRequestedListener, DrumListener
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(IRLbot.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     public final static String CRAWLER_NAME = "JIRLbot/1.0";
 
     /** Contains the addresses of pages that need to be crawled **/
@@ -279,7 +280,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         }
         catch (DrumException dEx)
         {
-            LOG.fatal("Could not initialize cache for url-seen instance", dEx);
+            LOG.error("Could not initialize cache for url-seen instance", dEx);
             System.exit(1);
         }
 
@@ -290,7 +291,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         }
         catch (DrumException dEx)
         {
-            LOG.fatal("Could not initialize cache for STAR instance", dEx);
+            LOG.error("Could not initialize cache for STAR instance", dEx);
             System.exit(1);
         }
         this.pldIndegree.addCheckSpamUrlListener(this);
@@ -306,7 +307,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         }
         catch (DrumException dEx)
         {
-            LOG.fatal("Could not initialize cache for checks against robots.txt files", dEx);
+            LOG.error("Could not initialize cache for checks against robots.txt files", dEx);
             System.exit(1);
         }
 
@@ -321,7 +322,7 @@ public class IRLbot implements Runnable, UniqueUrlListener, CheckSpamUrlListener
         }
         catch (DrumException dEx)
         {
-            LOG.fatal("Could not initialize cache for requested downloads of robots.txt files", dEx);
+            LOG.error("Could not initialize cache for requested downloads of robots.txt files", dEx);
             System.exit(1);
         }
 

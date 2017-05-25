@@ -3,6 +3,7 @@ package at.rovo.crawler;
 import at.rovo.common.Pair;
 import at.rovo.crawler.interfaces.BEASTBudgetPassedListener;
 import at.rovo.crawler.util.IRLbotUtils;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is an implementation of the <em>Budget Enforcement with Anti-Spam tactics (BEAST)</em> structure presented by
@@ -33,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 public final class BEAST
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(BEAST.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /** The {@link List} of expandable queues **/
     private List<Queue<Pair<String, Integer>>> queues = null;

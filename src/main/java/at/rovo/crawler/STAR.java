@@ -11,12 +11,13 @@ import at.rovo.drum.DrumListener;
 import at.rovo.drum.NullDispatcher;
 import at.rovo.drum.berkeley.BerkeleyDBStoreMerger;
 import at.rovo.drum.util.DrumUtils;
+import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Spam Tracking and Avoidance through Reputation (STAR) uses DRUM to calculate a budget for pay level domains (PLDs).
@@ -36,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 public final class STAR extends NullDispatcher<PLDData, String>
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(STAR.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /** The DRUM object managing the update and unique/duplicate checking **/
     private Drum<PLDData, String> drum = null;

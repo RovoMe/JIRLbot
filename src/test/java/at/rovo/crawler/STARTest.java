@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 
 public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSpamUrlListener
 {
-    private final static Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private STAR star = null;
     private String checkReturnURL = null;
@@ -88,7 +88,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (InterruptedException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
 
             plds = new TreeSet<>();
@@ -108,7 +108,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (InterruptedException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
 
             plds = new TreeSet<>();
@@ -123,7 +123,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (InterruptedException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
 
             plds = new TreeSet<>();
@@ -139,7 +139,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (InterruptedException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
 
             plds = new TreeSet<>();
@@ -153,7 +153,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (InterruptedException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
 
             // in-degree value:
@@ -174,7 +174,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (InterruptedException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
 
             Set<PLDData> pldData = this.star.getTopNSet();
@@ -352,7 +352,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
         }
         catch (DrumException e)
         {
-            LOG.catching(e);
+            LOG.error(e.getLocalizedMessage(), e);
         }
         finally
         {
@@ -398,7 +398,7 @@ public class STARTest extends BaseDataStoreTest implements DrumListener, CheckSp
             }
             catch (DrumException e)
             {
-                LOG.catching(e);
+                LOG.error(e.getLocalizedMessage(), e);
             }
         }
     }

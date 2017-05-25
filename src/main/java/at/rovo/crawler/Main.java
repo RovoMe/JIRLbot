@@ -7,13 +7,13 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main implements Runnable
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private List<String> lookAndFeels = Arrays.asList(
             //"com.seaglasslookandfeel.SeaGlassLookAndFeel",        // SeaGlass has issues on Mac OS X

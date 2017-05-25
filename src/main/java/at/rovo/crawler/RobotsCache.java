@@ -9,8 +9,9 @@ import at.rovo.drum.berkeley.BerkeleyDBStoreMerger;
 import at.rovo.drum.util.DrumUtils;
 import at.rovo.crawler.bean.HostData;
 import at.rovo.crawler.util.IRLbotUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.lang.invoke.MethodHandles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * For caching robots.txt, we have another <em>DRUM</em> structure called RobotsCache, which supports asynchronous check
@@ -21,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 public final class RobotsCache
 {
     /** The logger of this class **/
-    private final static Logger LOG = LogManager.getLogger(IRLbot.class);
+    private final static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private int numBuckets = 0;
     private Drum<HostData, String> drum = null;
